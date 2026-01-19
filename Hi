@@ -1,30 +1,20 @@
--- [[ 1. LOAD THƯ VIỆN BEARLIB ]] --
--- Nếu bạn để source lib chung 1 file thì dán nội dung Bearlib ở trên cùng
--- Hoặc dùng loadstring nếu bạn đã upload lib lên mạng:
--- local Bearlib = loadstring(game:HttpGet("https://raw.githubusercontent.com/Huylovemy/New/refs/heads/main/Huyzhud.lua"))()
-
--- Giả sử biến 'Bearlib' đã được require hoặc define từ source bạn gửi
-local Bearlib = require(script) -- Hoặc để nguyên source code Bearlib ở trên dòng này
-
--- [[ 2. CẤU HÌNH KEY ]] --
+local Bearlib = loadstring(game:HttpGet("https://raw.githubusercontent.com/Huylovemy/New/refs/heads/main/Huyzhud.lua"))()
+local Bearlib = require(script)
 local KeySettings = {
-    Key = "Huydepzai",      -- Mật khẩu của bạn
-    Link = "https://link4m.com/kjzVaRAh", -- Link để người dùng lấy key
-    FileName = "Bearhubkey" -- Tên file để lưu key (để không phải nhập lại)
+    Key = "Huydepzai",
+    Link = "https://link4m.com/kjzVaRAh",
+    FileName = "Bearhubkey"
 }
 
--- [[ 3. HÀM CHẠY MENU CHÍNH (Sẽ chạy sau khi nhập đúng Key) ]] --
 local function LoadMainHub()
-    -- Xóa giao diện Key cũ đi (nếu có)
     if game:GetService("CoreGui"):FindFirstChild("Bear Library") then
         game:GetService("CoreGui")["Bear Library"]:Destroy()
     end
 
-    -- TẠO GIAO DIỆN CHÍNH Ở ĐÂY
     local Window = Bearlib:MakeWindow({
-        "Huyzhud Hub", -- Tên Hub
-        "Version 1.0", -- Subtitle
-        "HuyzhudConfig.json" -- File config
+        "Bearhud Hub",
+        "by Quang Huy",
+        "HuyzhudConfig.json"
     })
 
     local Tab1 = Window:MakeTab({
