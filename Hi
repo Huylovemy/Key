@@ -1,9 +1,0 @@
--- Tạo màn hình chứa UI
-local sg = Instance.new("ScreenGui", game.Players.LocalPlayer:WaitForChild("PlayerGui"))
-
--- Tạo nút bấm
-local btn = Instance.new("TextButton", sg)
-btn.Size = UDim2.new(0, 200, 0, 50) -- Kích thước (200x50 px)
-btn.Position = UDim2.new(0.5, -100, 0.5, -25) -- Căn giữa màn hình
-btn.Text = "Bấm tôi đi"
-btn.BackgroundColor3 = Color3.new(0, 0.5, 1) -- Màu xanh
