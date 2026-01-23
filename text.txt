@@ -1,95 +1,95 @@
--- Tạo ScreenGui
 local ScreenGui = Instance.new("ScreenGui")
 local MainFrame = Instance.new("Frame")
-local Title = Instance.new("TextLabel")
+local HomeBar = Instance.new("TextButton") -- Thanh ngang kiểu iPhone
 local SpeedInput = Instance.new("TextBox")
 local JumpInput = Instance.new("TextBox")
-local ToggleBtn = Instance.new("TextButton")
-local UICorner = Instance.new("UICorner")
+local ApplyBtn = Instance.new("TextButton")
 
--- Thiết lập ScreenGui
-ScreenGui.Name = "CompactMenu"
+-- Cấu hình ScreenGui
+ScreenGui.Name = "FixedTopBarMenu"
 ScreenGui.Parent = game.CoreGui
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
--- Thiết lập Main Frame (Giao diện chính)
+-- 1. THANH NGANG (HOME BAR) - Đặt chính xác như trong ảnh
+HomeBar.Name = "HomeBar"
+HomeBar.Parent = ScreenGui
+HomeBar.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+HomeBar.BackgroundTransparency = 0.2 -- Độ trong suốt giống ảnh
+HomeBar.BorderSizePixel = 0
+-- Tọa độ X=210 (ngay sau icon Chat), Y=15 (ngang hàng Topbar)
+HomeBar.Position = UDim2.new(0, 160, 0, 15) 
+HomeBar.Size = UDim2.new(0, 80, 0, 4) -- Thanh mảnh giống iPhone
+HomeBar.Text = ""
+HomeBar.Active = true
+HomeBar.Draggable = false -- Cố định theo ý bạn
+
+local BarCorner = Instance.new("UICorner", HomeBar)
+BarCorner.CornerRadius = UDim.new(1, 0)
+
+-- 2. GIAO DIỆN CHÍNH (MAIN FRAME)
 MainFrame.Name = "MainFrame"
-MainFrame.Parent = ScreenGui
-MainFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-MainFrame.Position = UDim2.new(0.5, -75, 0.5, -75)
-MainFrame.Size = UDim2.new(0, 150, 0, 180)
-MainFrame.Active = true
-MainFrame.Draggable = true -- Tính năng kéo thả cơ bản
+MainFrame.Parent = HomeBar 
+MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+MainFrame.BackgroundTransparency = 0.1
+MainFrame.Position = UDim2.new(0, 0, 0, 15) -- Xuất hiện ngay dưới thanh ngang
+MainFrame.Size = UDim2.new(0, 130, 0, 140)
+MainFrame.Visible = false -- Mặc định ẩn, bấm thanh ngang mới hiện
 
-local Corner = Instance.new("UICorner", MainFrame)
-Corner.CornerRadius = UDim.new(0, 10)
+local MainCorner = Instance.new("UICorner", MainFrame)
+MainCorner.CornerRadius = UDim.new(0, 8)
 
--- Tiêu đề
-Title.Parent = MainFrame
-Title.BackgroundTransparency = 1
-Title.Size = UDim2.new(1, 0, 0, 30)
-Title.Font = Enum.Font.GothamBold
-Title.Text = "COMPACT MOD"
-Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.TextSize = 14
-
--- Ô nhập Tốc độ (Speed)
+-- Input Tốc độ
 SpeedInput.Parent = MainFrame
-SpeedInput.PlaceholderText = "Speed (16)..."
-SpeedInput.Size = UDim2.new(0.8, 0, 0, 30)
-SpeedInput.Position = UDim2.new(0.1, 0, 0.25, 0)
-SpeedInput.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+SpeedInput.PlaceholderText = "Speed..."
+SpeedInput.Size = UDim2.new(0.8, 0, 0, 25)
+SpeedInput.Position = UDim2.new(0.1, 0, 0.15, 0)
+SpeedInput.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 SpeedInput.TextColor3 = Color3.fromRGB(255, 255, 255)
 Instance.new("UICorner", SpeedInput)
 
--- Ô nhập Nhảy cao (Jump)
+-- Input Nhảy
 JumpInput.Parent = MainFrame
-JumpInput.PlaceholderText = "Jump (50)..."
-JumpInput.Size = UDim2.new(0.8, 0, 0, 30)
-JumpInput.Position = UDim2.new(0.1, 0, 0.45, 0)
-JumpInput.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+JumpInput.PlaceholderText = "Jump..."
+JumpInput.Size = UDim2.new(0.8, 0, 0, 25)
+JumpInput.Position = UDim2.new(0.1, 0, 0.4, 0)
+JumpInput.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 JumpInput.TextColor3 = Color3.fromRGB(255, 255, 255)
 Instance.new("UICorner", JumpInput)
 
--- Nút Toggle (Bật/Tắt)
-ToggleBtn.Parent = MainFrame
-ToggleBtn.Name = "ToggleBtn"
-ToggleBtn.Text = "APPLY"
-ToggleBtn.Size = UDim2.new(0.8, 0, 0, 35)
-ToggleBtn.Position = UDim2.new(0.1, 0, 0.7, 0)
-ToggleBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 127)
-ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-ToggleBtn.Font = Enum.Font.GothamBold
-Instance.new("UICorner", ToggleBtn)
+-- Nút Bật/Tắt
+ApplyBtn.Parent = MainFrame
+ApplyBtn.Text = "APPLY"
+ApplyBtn.Size = UDim2.new(0.8, 0, 0, 30)
+ApplyBtn.Position = UDim2.new(0.1, 0, 0.7, 0)
+ApplyBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+ApplyBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
+ApplyBtn.Font = Enum.Font.GothamBold
+Instance.new("UICorner", ApplyBtn)
 
--- LOGIC XỬ LÝ
+-- LOGIC
 local active = false
 
-ToggleBtn.MouseButton1Click:Connect(function()
-    local char = game.Players.LocalPlayer.Character
-    local hum = char and char:FindFirstChildOfClass("Humanoid")
-    
+-- Bấm thanh ngang để đóng/mở menu
+HomeBar.MouseButton1Click:Connect(function()
+    MainFrame.Visible = not MainFrame.Visible
+end)
+
+ApplyBtn.MouseButton1Click:Connect(function()
+    local hum = game.Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
     if hum then
         active = not active
         if active then
-            -- Áp dụng chỉ số
             hum.WalkSpeed = tonumber(SpeedInput.Text) or 16
             hum.JumpPower = tonumber(JumpInput.Text) or 50
-            ToggleBtn.Text = "RESET"
-            ToggleBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+            ApplyBtn.Text = "RESET"
+            ApplyBtn.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+            ApplyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
         else
-            -- Reset về mặc định
             hum.WalkSpeed = 16
             hum.JumpPower = 50
-            ToggleBtn.Text = "APPLY"
-            ToggleBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 127)
+            ApplyBtn.Text = "APPLY"
+            ApplyBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+            ApplyBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
         end
-    end
-end)
-
--- Phím tắt ẩn/hiện menu (Phím L)
-game:GetService("UserInputService").InputBegan:Connect(function(input, gpe)
-    if not gpe and input.KeyCode == Enum.KeyCode.L then
-        MainFrame.Visible = not MainFrame.Visible
     end
 end)
