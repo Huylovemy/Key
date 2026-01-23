@@ -51,7 +51,7 @@ MainFrame.Parent = HomeBar
 MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 MainFrame.Position = UDim2.new(0, 0, 0, 20) 
 MainFrame.Size = UDim2.new(0, 140, 0, 150)
-MainFrame.Visible = false 
+MainFrame.Visible = true 
 MainFrame.BorderSizePixel = 0
 
 local MainCorner = Instance.new("UICorner", MainFrame)
