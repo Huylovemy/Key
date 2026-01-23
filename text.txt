@@ -71,10 +71,10 @@ end
 -- --- PHẦN 1: NÚT BẬT/TẮT NHỎ (TOGGLE BUTTON) ---
 local ToggleBtn = Instance.new("TextButton")
 ToggleBtn.Name = "ToggleButton"
-ToggleBtn.Size = UDim2.new(0, 100, 0, 30) -- Kích thước thanh ngang nhỏ
+ToggleBtn.Size = UDim2.new(0, 100, 0, 2) -- Kích thước thanh ngang nhỏ
 ToggleBtn.Position = UDim2.new(0.1, 0, 0.1, 0) -- Vị trí mặc định ở góc
 ToggleBtn.BackgroundColor3 = UI_CONFIG.AccentColor
-ToggleBtn.Text = "Ẩn Menu"
+ToggleBtn.Text = "-----"
 ToggleBtn.TextColor3 = UI_CONFIG.TextColor
 ToggleBtn.Font = Enum.Font.SourceSansBold
 ToggleBtn.TextSize = 14
