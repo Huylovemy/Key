@@ -1,247 +1,255 @@
-[span_0](start_span)local Players = game:GetService("Players")[span_0](end_span)
-[span_1](start_span)local UserInputService = game:GetService("UserInputService")[span_1](end_span)
-[span_2](start_span)local RunService = game:GetService("RunService")[span_2](end_span)
-[span_3](start_span)local CoreGui = game:GetService("CoreGui")[span_3](end_span)
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local CoreGui = game:GetService("CoreGui")
 
-[span_4](start_span)local LocalPlayer = Players.LocalPlayer[span_4](end_span)
+local LocalPlayer = Players.LocalPlayer
 
 -- --- CẤU HÌNH UI ---
 local UI_CONFIG = {
-    [span_5](start_span)MainColor = Color3.fromRGB(35, 35, 35),      -- Màu nền chính[span_5](end_span)
-    [span_6](start_span)SecondaryColor = Color3.fromRGB(50, 50, 50), -- Màu nền phụ[span_6](end_span)
-    [span_7](start_span)AccentColor = Color3.fromRGB(0, 170, 255),   -- Màu nổi bật[span_7](end_span)
-    [span_8](start_span)TextColor = Color3.fromRGB(255, 255, 255),[span_8](end_span)
-    [span_9](start_span)ToggleOn = Color3.fromRGB(0, 200, 100),      -- Màu nút khi Bật[span_9](end_span)
-    [span_10](start_span)ToggleOff = Color3.fromRGB(200, 50, 50)      -- Màu nút khi Tắt[span_10](end_span)
+    MainColor = Color3.fromRGB(35, 35, 35),      -- Màu nền chính
+    SecondaryColor = Color3.fromRGB(50, 50, 50), -- Màu nền phụ
+    AccentColor = Color3.fromRGB(0, 170, 255),   -- Màu nổi bật (Thanh kéo/Nút mở)
+    TextColor = Color3.fromRGB(255, 255, 255),
+    ToggleOn = Color3.fromRGB(0, 200, 100),      -- Màu nút khi Bật
+    ToggleOff = Color3.fromRGB(200, 50, 50)      -- Màu nút khi Tắt
 }
 
 -- --- BIẾN TRẠNG THÁI ---
 local state = {
-    [span_11](start_span)speed = { enabled = false, value = 16, sliderMax = 200 },[span_11](end_span)
-    [span_12](start_span)jump = { enabled = false, value = 50, sliderMax = 300 }[span_12](end_span)
+    speed = { enabled = false, value = 16, sliderMax = 200 }, 
+    jump = { enabled = false, value = 50, sliderMax = 300 }   
 }
 
 -- --- TẠO GIAO DIỆN (GUI) ---
-[span_13](start_span)local ScreenGui = Instance.new("ScreenGui")[span_13](end_span)
-[span_14](start_span)ScreenGui.Name = "SpeedJumpUI_Updated"[span_14](end_span)
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "SpeedJumpUI_Updated"
 
 if RunService:IsStudio() then
-    [span_15](start_span)ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")[span_15](end_span)
+    ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 else
-    [span_16](start_span)pcall(function() ScreenGui.Parent = CoreGui end)[span_16](end_span)
-    [span_17](start_span)if not ScreenGui.Parent then ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui") end[span_17](end_span)
+    pcall(function() ScreenGui.Parent = CoreGui end)
+    if not ScreenGui.Parent then ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui") end
 end
 
 -- --- HÀM CHỨC NĂNG KÉO THẢ (DRAGGABLE) ---
-[span_18](start_span)local function makeDraggable(frame)[span_18](end_span)
-    [span_19](start_span)local dragging, dragInput, dragStart, startPos[span_19](end_span)
+-- Hàm này giúp bất kỳ khung nào cũng có thể di chuyển được
+local function makeDraggable(frame)
+    local dragging, dragInput, dragStart, startPos
     
-    [span_20](start_span)frame.InputBegan:Connect(function(input)[span_20](end_span)
-        [span_21](start_span)if input.UserInputType == Enum.UserInputType.MouseButton1 then[span_21](end_span)
-            [span_22](start_span)dragging = true[span_22](end_span)
-            [span_23](start_span)dragStart = input.Position[span_23](end_span)
-            [span_24](start_span)startPos = frame.Position[span_24](end_span)
+    frame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true
+            dragStart = input.Position
+            startPos = frame.Position
             
-            [span_25](start_span)input.Changed:Connect(function()[span_25](end_span)
-                [span_26](start_span)if input.UserInputState == Enum.UserInputState.End then[span_26](end_span)
-                    [span_27](start_span)dragging = false[span_27](end_span)
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
                 end
             end)
         end
     end)
     
-    [span_28](start_span)frame.InputChanged:Connect(function(input)[span_28](end_span)
-        [span_29](start_span)if input.UserInputType == Enum.UserInputType.MouseMovement then[span_29](end_span)
-            [span_30](start_span)dragInput = input[span_30](end_span)
+    frame.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement then
+            dragInput = input
         end
     end)
     
-    [span_31](start_span)UserInputService.InputChanged:Connect(function(input)[span_31](end_span)
-        [span_32](start_span)if input == dragInput and dragging then[span_32](end_span)
-            [span_33](start_span)local delta = input.Position - dragStart[span_33](end_span)
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            local delta = input.Position - dragStart
             frame.Position = UDim2.new(
                 startPos.X.Scale, startPos.X.Offset + delta.X, 
-                [span_34](start_span)startPos.Y.Scale, startPos.Y.Offset + delta.Y[span_34](end_span)
+                startPos.Y.Scale, startPos.Y.Offset + delta.Y
             )
         end
     end)
 end
 
 -- --- PHẦN 1: NÚT BẬT/TẮT NHỎ (TOGGLE BUTTON) ---
-[span_35](start_span)local ToggleBtn = Instance.new("TextButton")[span_35](end_span)
-[span_36](start_span)ToggleBtn.Name = "ToggleButton"[span_36](end_span)
-[span_37](start_span)ToggleBtn.Size = UDim2.new(0, 100, 0, 10) -- Đã sửa kích thước ngang nhỏ[span_37](end_span)
-[span_38](start_span)ToggleBtn.Position = UDim2.new(0.1, 0, 0.1, 0)[span_38](end_span)
-[span_39](start_span)ToggleBtn.BackgroundColor3 = UI_CONFIG.AccentColor[span_39](end_span)
-[span_40](start_span)ToggleBtn.Text = "" -- Đã xoá chữ ẩn hiện menu[span_40](end_span)
-[span_41](start_span)ToggleBtn.TextColor3 = UI_CONFIG.TextColor[span_41](end_span)
-[span_42](start_span)ToggleBtn.Font = Enum.Font.SourceSansBold[span_42](end_span)
-[span_43](start_span)ToggleBtn.TextSize = 14[span_43](end_span)
-[span_44](start_span)ToggleBtn.Parent = ScreenGui[span_44](end_span)
+local ToggleBtn = Instance.new("TextButton")
+ToggleBtn.Name = "ToggleButton"
+ToggleBtn.Size = UDim2.new(0, 100, 0, 10) -- Đã sửa kích thước để hợp lệ (ví dụ: rộng 100, cao 10)
+ToggleBtn.Position = UDim2.new(0.1, 0, 0.1, 0)
+ToggleBtn.BackgroundColor3 = UI_CONFIG.AccentColor
+[span_1](start_span)ToggleBtn.Text = "" -- Xóa chữ tại đây[span_1](end_span)
+ToggleBtn.TextColor3 = UI_CONFIG.TextColor
+ToggleBtn.Font = Enum.Font.SourceSansBold
+ToggleBtn.TextSize = 14
+ToggleBtn.Parent = ScreenGui
 
-[span_45](start_span)local ToggleCorner = Instance.new("UICorner")[span_45](end_span)
-[span_46](start_span)ToggleCorner.CornerRadius = UDim.new(0, 8)[span_46](end_span)
-[span_47](start_span)ToggleCorner.Parent = ToggleBtn[span_47](end_span)
-
-[span_48](start_span)makeDraggable(ToggleBtn)[span_48](end_span)
 
 -- --- PHẦN 2: KHUNG CHÍNH (MAIN FRAME) ---
-[span_49](start_span)local MainFrame = Instance.new("Frame")[span_49](end_span)
-[span_50](start_span)MainFrame.Name = "MainFrame"[span_50](end_span)
-[span_51](start_span)MainFrame.Size = UDim2.new(0, 220, 0, 230)[span_51](end_span)
-[span_52](start_span)MainFrame.Position = UDim2.new(0.5, -110, 0.5, -115)[span_52](end_span)
-[span_53](start_span)MainFrame.BackgroundColor3 = UI_CONFIG.MainColor[span_53](end_span)
-[span_54](start_span)MainFrame.BorderSizePixel = 0[span_54](end_span)
-[span_55](start_span)MainFrame.Visible = false[span_55](end_span)
-[span_56](start_span)MainFrame.Parent = ScreenGui[span_56](end_span)
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Size = UDim2.new(0, 220, 0, 230)
+MainFrame.Position = UDim2.new(0.5, -110, 0.5, -115) 
+MainFrame.BackgroundColor3 = UI_CONFIG.MainColor
+MainFrame.BorderSizePixel = 0
+MainFrame.Visible = false -- Mặc định hiện
+MainFrame.Parent = ScreenGui
 
-[span_57](start_span)local MainCorner = Instance.new("UICorner")[span_57](end_span)
-[span_58](start_span)MainCorner.CornerRadius = UDim.new(0, 8)[span_58](end_span)
-[span_59](start_span)MainCorner.Parent = MainFrame[span_59](end_span)
+-- Bo tròn góc MainFrame
+local MainCorner = Instance.new("UICorner")
+MainCorner.CornerRadius = UDim.new(0, 8)
+MainCorner.Parent = MainFrame
 
-[span_60](start_span)local Title = Instance.new("TextLabel")[span_60](end_span)
-[span_61](start_span)Title.Text = "CONTROL PANEL"[span_61](end_span)
-[span_62](start_span)Title.Size = UDim2.new(1, 0, 0, 30)[span_62](end_span)
-[span_63](start_span)Title.BackgroundTransparency = 1[span_63](end_span)
-[span_64](start_span)Title.TextColor3 = UI_CONFIG.TextColor[span_64](end_span)
-[span_65](start_span)Title.Font = Enum.Font.SourceSansBold[span_65](end_span)
-[span_66](start_span)Title.TextSize = 18[span_66](end_span)
-[span_67](start_span)Title.Parent = MainFrame[span_67](end_span)
+-- Tiêu đề
+local Title = Instance.new("TextLabel")
+Title.Text = "CONTROL PANEL"
+Title.Size = UDim2.new(1, 0, 0, 30)
+Title.BackgroundTransparency = 1
+Title.TextColor3 = UI_CONFIG.TextColor
+Title.Font = Enum.Font.SourceSansBold
+Title.TextSize = 18
+Title.Parent = MainFrame
 
-[span_68](start_span)makeDraggable(MainFrame)[span_68](end_span)
+-- Cho phép kéo khung chính
+makeDraggable(MainFrame)
 
 -- --- LOGIC NÚT BẬT/TẮT ---
-[span_69](start_span)ToggleBtn.MouseButton1Click:Connect(function()[span_69](end_span)
-    [span_70](start_span)MainFrame.Visible = not MainFrame.Visible[span_70](end_span)
-    [span_71](start_span)if MainFrame.Visible then[span_71](end_span)
-        [span_72](start_span)ToggleBtn.Text = "" -- Đảm bảo không có chữ khi mở[span_72](end_span)
-        [span_73](start_span)ToggleBtn.BackgroundColor3 = UI_CONFIG.AccentColor[span_73](end_span)
+ToggleBtn.MouseButton1Click:Connect(function()
+    MainFrame.Visible = not MainFrame.Visible
+    if MainFrame.Visible then
+        ToggleBtn.Text = ""
+        ToggleBtn.BackgroundColor3 = UI_CONFIG.AccentColor
     else
-        [span_74](start_span)ToggleBtn.Text = "" -- Đảm bảo không có chữ khi đóng[span_74](end_span)
-        [span_75](start_span)ToggleBtn.BackgroundColor3 = UI_CONFIG.SecondaryColor[span_75](end_span)
+        ToggleBtn.Text = ""
+        ToggleBtn.BackgroundColor3 = UI_CONFIG.SecondaryColor
     end
 end)
 
 -- --- HÀM TẠO THANH KÉO (SLIDER) ---
-[span_76](start_span)local function createControl(name, yPos, typeStr)[span_76](end_span)
-    [span_77](start_span)local Container = Instance.new("Frame")[span_77](end_span)
-    [span_78](start_span)Container.Size = UDim2.new(0.9, 0, 0, 80)[span_78](end_span)
-    [span_79](start_span)Container.Position = UDim2.new(0.05, 0, 0, yPos)[span_79](end_span)
-    [span_80](start_span)Container.BackgroundColor3 = UI_CONFIG.SecondaryColor[span_80](end_span)
-    [span_81](start_span)Container.BorderSizePixel = 0[span_81](end_span)
-    [span_82](start_span)Container.Parent = MainFrame[span_82](end_span)
-    [span_83](start_span)Instance.new("UICorner", Container).CornerRadius = UDim.new(0, 6)[span_83](end_span)
+local function createControl(name, yPos, typeStr)
+    local Container = Instance.new("Frame")
+    Container.Size = UDim2.new(0.9, 0, 0, 80)
+    Container.Position = UDim2.new(0.05, 0, 0, yPos)
+    Container.BackgroundColor3 = UI_CONFIG.SecondaryColor
+    Container.BorderSizePixel = 0
+    Container.Parent = MainFrame
+    Instance.new("UICorner", Container).CornerRadius = UDim.new(0, 6)
 
-    [span_84](start_span)local Label = Instance.new("TextLabel")[span_84](end_span)
-    [span_85](start_span)Label.Text = name[span_85](end_span)
-    [span_86](start_span)Label.Size = UDim2.new(1, -60, 0, 30)[span_86](end_span)
-    [span_87](start_span)Label.Position = UDim2.new(0, 10, 0, 0)[span_87](end_span)
-    [span_88](start_span)Label.BackgroundTransparency = 1[span_88](end_span)
-    [span_89](start_span)Label.TextColor3 = UI_CONFIG.TextColor[span_89](end_span)
-    [span_90](start_span)Label.Font = Enum.Font.SourceSansSemibold[span_90](end_span)
-    [span_91](start_span)Label.TextSize = 16[span_91](end_span)
-    [span_92](start_span)Label.TextXAlignment = Enum.TextXAlignment.Left[span_92](end_span)
-    [span_93](start_span)Label.Parent = Container[span_93](end_span)
+    -- Tên chức năng
+    local Label = Instance.new("TextLabel")
+    Label.Text = name
+    Label.Size = UDim2.new(1, -60, 0, 30)
+    Label.Position = UDim2.new(0, 10, 0, 0)
+    Label.BackgroundTransparency = 1
+    Label.TextColor3 = UI_CONFIG.TextColor
+    Label.Font = Enum.Font.SourceSansSemibold
+    Label.TextSize = 16
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+    Label.Parent = Container
 
-    [span_94](start_span)local FuncToggle = Instance.new("TextButton")[span_94](end_span)
-    [span_95](start_span)FuncToggle.Size = UDim2.new(0, 40, 0, 20)[span_95](end_span)
-    [span_96](start_span)FuncToggle.Position = UDim2.new(1, -50, 0, 5)[span_96](end_span)
-    [span_97](start_span)FuncToggle.BackgroundColor3 = UI_CONFIG.ToggleOff[span_97](end_span)
-    [span_98](start_span)FuncToggle.Text = "OFF"[span_98](end_span)
-    [span_99](start_span)FuncToggle.TextColor3 = Color3.new(1,1,1)[span_99](end_span)
-    [span_100](start_span)FuncToggle.Font = Enum.Font.SourceSansBold[span_100](end_span)
-    [span_101](start_span)FuncToggle.Parent = Container[span_101](end_span)
-    [span_102](start_span)Instance.new("UICorner", FuncToggle).CornerRadius = UDim.new(0, 4)[span_102](end_span)
+    -- Nút Bật/Tắt Chức năng
+    local FuncToggle = Instance.new("TextButton")
+    FuncToggle.Size = UDim2.new(0, 40, 0, 20)
+    FuncToggle.Position = UDim2.new(1, -50, 0, 5)
+    FuncToggle.BackgroundColor3 = UI_CONFIG.ToggleOff
+    FuncToggle.Text = "OFF"
+    FuncToggle.TextColor3 = Color3.new(1,1,1)
+    FuncToggle.Font = Enum.Font.SourceSansBold
+    FuncToggle.Parent = Container
+    Instance.new("UICorner", FuncToggle).CornerRadius = UDim.new(0, 4)
 
-    [span_103](start_span)local SliderBg = Instance.new("TextButton")[span_103](end_span)
-    [span_104](start_span)SliderBg.Text = ""[span_104](end_span)
-    [span_105](start_span)SliderBg.Size = UDim2.new(0.9, 0, 0, 10)[span_105](end_span)
-    [span_106](start_span)SliderBg.Position = UDim2.new(0.05, 0, 0, 45)[span_106](end_span)
-    [span_107](start_span)SliderBg.BackgroundColor3 = Color3.fromRGB(30, 30, 30)[span_107](end_span)
-    [span_108](start_span)SliderBg.AutoButtonColor = false[span_108](end_span)
-    [span_109](start_span)SliderBg.Parent = Container[span_109](end_span)
-    [span_110](start_span)Instance.new("UICorner", SliderBg).CornerRadius = UDim.new(1, 0)[span_110](end_span)
+    -- Thanh trượt (Background)
+    local SliderBg = Instance.new("TextButton") 
+    SliderBg.Text = ""
+    SliderBg.Size = UDim2.new(0.9, 0, 0, 10)
+    SliderBg.Position = UDim2.new(0.05, 0, 0, 45)
+    SliderBg.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    SliderBg.AutoButtonColor = false
+    SliderBg.Parent = Container
+    Instance.new("UICorner", SliderBg).CornerRadius = UDim.new(1, 0)
 
-    [span_111](start_span)local SliderFill = Instance.new("Frame")[span_111](end_span)
-    [span_112](start_span)SliderFill.Size = UDim2.new(0, 0, 1, 0)[span_112](end_span)
-    [span_113](start_span)SliderFill.BackgroundColor3 = UI_CONFIG.AccentColor[span_113](end_span)
-    [span_114](start_span)SliderFill.BorderSizePixel = 0[span_114](end_span)
-    [span_115](start_span)SliderFill.Parent = SliderBg[span_115](end_span)
-    [span_116](start_span)Instance.new("UICorner", SliderFill).CornerRadius = UDim.new(1, 0)[span_116](end_span)
+    -- Thanh trượt (Fill)
+    local SliderFill = Instance.new("Frame")
+    SliderFill.Size = UDim2.new(0, 0, 1, 0) 
+    SliderFill.BackgroundColor3 = UI_CONFIG.AccentColor
+    SliderFill.BorderSizePixel = 0
+    SliderFill.Parent = SliderBg
+    Instance.new("UICorner", SliderFill).CornerRadius = UDim.new(1, 0)
 
-    [span_117](start_span)local ValueLabel = Instance.new("TextLabel")[span_117](end_span)
-    [span_118](start_span)ValueLabel.Text = "Value: 0"[span_118](end_span)
-    [span_119](start_span)ValueLabel.Size = UDim2.new(1, 0, 0, 20)[span_119](end_span)
-    [span_120](start_span)ValueLabel.Position = UDim2.new(0, 0, 0, 60)[span_120](end_span)
-    [span_121](start_span)ValueLabel.BackgroundTransparency = 1[span_121](end_span)
-    [span_122](start_span)ValueLabel.TextColor3 = Color3.fromRGB(200, 200, 200)[span_122](end_span)
-    [span_123](start_span)ValueLabel.TextSize = 14[span_123](end_span)
-    [span_124](start_span)ValueLabel.Parent = Container[span_124](end_span)
+    -- Hiển thị số
+    local ValueLabel = Instance.new("TextLabel")
+    ValueLabel.Text = "Value: 0"
+    ValueLabel.Size = UDim2.new(1, 0, 0, 20)
+    ValueLabel.Position = UDim2.new(0, 0, 0, 60)
+    ValueLabel.BackgroundTransparency = 1
+    ValueLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+    ValueLabel.TextSize = 14
+    ValueLabel.Parent = Container
 
-    [span_125](start_span)local currentData = state[typeStr][span_125](end_span)
+    -- --- LOGIC ---
+    local currentData = state[typeStr]
     
-    [span_126](start_span)FuncToggle.MouseButton1Click:Connect(function()[span_126](end_span)
-        [span_127](start_span)currentData.enabled = not currentData.enabled[span_127](end_span)
-        [span_128](start_span)if currentData.enabled then[span_128](end_span)
-            [span_129](start_span)FuncToggle.Text = "ON"[span_129](end_span)
-            [span_130](start_span)FuncToggle.BackgroundColor3 = UI_CONFIG.ToggleOn[span_130](end_span)
+    -- Logic Click ON/OFF chức năng
+    FuncToggle.MouseButton1Click:Connect(function()
+        currentData.enabled = not currentData.enabled
+        if currentData.enabled then
+            FuncToggle.Text = "ON"
+            FuncToggle.BackgroundColor3 = UI_CONFIG.ToggleOn
         else
-            [span_131](start_span)FuncToggle.Text = "OFF"[span_131](end_span)
-            [span_132](start_span)FuncToggle.BackgroundColor3 = UI_CONFIG.ToggleOff[span_132](end_span)
-            [span_133](start_span)local char = LocalPlayer.Character[span_133](end_span)
-            [span_134](start_span)if char and char:FindFirstChild("Humanoid") then[span_134](end_span)
-                [span_135](start_span)if typeStr == "speed" then char.Humanoid.WalkSpeed = 16 end[span_135](end_span)
-                [span_136](start_span)if typeStr == "jump" then char.Humanoid.JumpPower = 50 end[span_136](end_span)
+            FuncToggle.Text = "OFF"
+            FuncToggle.BackgroundColor3 = UI_CONFIG.ToggleOff
+            -- Reset về mặc định
+            local char = LocalPlayer.Character
+            if char and char:FindFirstChild("Humanoid") then
+                if typeStr == "speed" then char.Humanoid.WalkSpeed = 16 end
+                if typeStr == "jump" then char.Humanoid.JumpPower = 50 end
             end
         end
     end)
 
-    [span_137](start_span)local mouse = LocalPlayer:GetMouse()[span_137](end_span)
-    [span_138](start_span)local draggingSlider = false[span_138](end_span)
+    -- Logic Kéo Slider
+    local mouse = LocalPlayer:GetMouse()
+    local draggingSlider = false
 
-    [span_139](start_span)local function updateSlider()[span_139](end_span)
-        [span_140](start_span)local percent = math.clamp((mouse.X - SliderBg.AbsolutePosition.X) / SliderBg.AbsoluteSize.X, 0, 1)[span_140](end_span)
-        [span_141](start_span)SliderFill.Size = UDim2.new(percent, 0, 1, 0)[span_141](end_span)
+    local function updateSlider()
+        local percent = math.clamp((mouse.X - SliderBg.AbsolutePosition.X) / SliderBg.AbsoluteSize.X, 0, 1)
+        SliderFill.Size = UDim2.new(percent, 0, 1, 0)
         
-        [span_142](start_span)local newValue = math.floor(percent * currentData.sliderMax)[span_142](end_span)
-        [span_143](start_span)currentData.value = newValue[span_143](end_span)
-        [span_144](start_span)ValueLabel.Text = "Value: " .. newValue[span_144](end_span)
+        local newValue = math.floor(percent * currentData.sliderMax)
+        currentData.value = newValue
+        ValueLabel.Text = "Value: " .. newValue
     end
 
-    [span_145](start_span)SliderBg.MouseButton1Down:Connect(function()[span_145](end_span)
-        [span_146](start_span)draggingSlider = true[span_146](end_span)
-        [span_147](start_span)updateSlider()[span_147](end_span)
+    SliderBg.MouseButton1Down:Connect(function()
+        draggingSlider = true
+        updateSlider()
     end)
 
-    [span_148](start_span)UserInputService.InputEnded:Connect(function(input)[span_148](end_span)
-        [span_149](start_span)if input.UserInputType == Enum.UserInputType.MouseButton1 then[span_149](end_span)
-            [span_150](start_span)draggingSlider = false[span_150](end_span)
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            draggingSlider = false
         end
     end)
 
-    [span_151](start_span)UserInputService.InputChanged:Connect(function(input)[span_151](end_span)
-        [span_152](start_span)if draggingSlider and input.UserInputType == Enum.UserInputType.MouseMovement then[span_152](end_span)
-            [span_153](start_span)updateSlider()[span_153](end_span)
+    UserInputService.InputChanged:Connect(function(input)
+        if draggingSlider and input.UserInputType == Enum.UserInputType.MouseMovement then
+            updateSlider()
         end
     end)
 end
 
--[span_154](start_span)- Tạo 2 bộ điều khiển[span_154](end_span)
-[span_155](start_span)createControl("Tốc Độ Chạy", 40, "speed")[span_155](end_span)
-[span_156](start_span)createControl("Độ Nhảy Cao", 130, "jump")[span_156](end_span)
+-- Tạo 2 bộ điều khiển
+createControl("Tốc Độ Chạy", 40, "speed")
+createControl("Độ Nhảy Cao", 130, "jump")
 
 -- --- VÒNG LẶP ÁP DỤNG ---
-[span_157](start_span)RunService.RenderStepped:Connect(function()[span_157](end_span)
-    [span_158](start_span)local char = LocalPlayer.Character[span_158](end_span)
-    [span_159](start_span)if char and char:FindFirstChild("Humanoid") then[span_159](end_span)
-        [span_160](start_span)if state.speed.enabled then[span_160](end_span)
-            [span_161](start_span)char.Humanoid.WalkSpeed = state.speed.value[span_161](end_span)
+RunService.RenderStepped:Connect(function()
+    local char = LocalPlayer.Character
+    if char and char:FindFirstChild("Humanoid") then
+        if state.speed.enabled then
+            char.Humanoid.WalkSpeed = state.speed.value
         end
-        [span_162](start_span)if state.jump.enabled then[span_162](end_span)
-            [span_163](start_span)char.Humanoid.UseJumpPower = true[span_163](end_span)
-            [span_164](start_span)char.Humanoid.JumpPower = state.jump.value[span_164](end_span)
+        if state.jump.enabled then
+            char.Humanoid.UseJumpPower = true 
+            char.Humanoid.JumpPower = state.jump.value
         end
     end
 end)
 
-[span_165](start_span)print("UI Loaded: Draggable & Toggle Button Added!")[span_165](end_span)
+print("UI Loaded: Draggable & Toggle Button Added!")
