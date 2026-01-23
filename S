@@ -33,7 +33,7 @@ MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 MainFrame.BackgroundTransparency = 0.1
 MainFrame.Position = UDim2.new(0, 0, 0, 15) -- Xuất hiện ngay dưới thanh ngang
 MainFrame.Size = UDim2.new(0, 130, 0, 140)
-MainFrame.Visible = false -- Mặc định ẩn, bấm thanh ngang mới hiện
+MainFrame.Visible = true -- Mặc định ẩn, bấm thanh ngang mới hiện
 
 local MainCorner = Instance.new("UICorner", MainFrame)
 MainCorner.CornerRadius = UDim.new(0, 8)
