@@ -17,7 +17,7 @@ HomeBar.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 HomeBar.BackgroundTransparency = 0.2 -- Độ trong suốt giống ảnh
 HomeBar.BorderSizePixel = 0
 -- Tọa độ X=210 (ngay sau icon Chat), Y=15 (ngang hàng Topbar)
-HomeBar.Position = UDim2.new(0, 160, 0, 15) 
+HomeBar.Position = UDim2.new(0, 10, 0, 0.01) 
 HomeBar.Size = UDim2.new(0, 80, 0, 4) -- Thanh mảnh giống iPhone
 HomeBar.Text = ""
 HomeBar.Active = true
