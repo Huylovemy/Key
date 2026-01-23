@@ -95,7 +95,7 @@ MainFrame.Size = UDim2.new(0, 220, 0, 230)
 MainFrame.Position = UDim2.new(0.5, -110, 0.5, -115) 
 MainFrame.BackgroundColor3 = UI_CONFIG.MainColor
 MainFrame.BorderSizePixel = 0
-MainFrame.Visible = true -- Mặc định hiện
+MainFrame.Visible = false -- Mặc định hiện
 MainFrame.Parent = ScreenGui
 
 -- Bo tròn góc MainFrame
