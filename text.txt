@@ -1,262 +1,95 @@
-local Players = game:GetService("Players")
-local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
-local CoreGui = game:GetService("CoreGui")
-
-local LocalPlayer = Players.LocalPlayer
-
--- --- CẤU HÌNH UI ---
-local UI_CONFIG = {
-    MainColor = Color3.fromRGB(35, 35, 35),      -- Màu nền chính
-    SecondaryColor = Color3.fromRGB(50, 50, 50), -- Màu nền phụ
-    AccentColor = Color3.fromRGB(0, 170, 255),   -- Màu nổi bật (Thanh kéo/Nút mở)
-    TextColor = Color3.fromRGB(255, 255, 255),
-    ToggleOn = Color3.fromRGB(0, 200, 100),      -- Màu nút khi Bật
-    ToggleOff = Color3.fromRGB(200, 50, 50)      -- Màu nút khi Tắt
-}
-
--- --- BIẾN TRẠNG THÁI ---
-local state = {
-    speed = { enabled = false, value = 16, sliderMax = 200 }, 
-    jump = { enabled = false, value = 50, sliderMax = 300 }   
-}
-
--- --- TẠO GIAO DIỆN (GUI) ---
+-- Tạo ScreenGui
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "SpeedJumpUI_Updated"
-
-if RunService:IsStudio() then
-    ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
-else
-    pcall(function() ScreenGui.Parent = CoreGui end)
-    if not ScreenGui.Parent then ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui") end
-end
-
--- --- HÀM CHỨC NĂNG KÉO THẢ (DRAGGABLE) ---
--- Hàm này giúp bất kỳ khung nào cũng có thể di chuyển được
-local function makeDraggable(frame)
-    local dragging, dragInput, dragStart, startPos
-    
-    frame.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragging = true
-            dragStart = input.Position
-            startPos = frame.Position
-            
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then
-                    dragging = false
-                end
-            end)
-        end
-    end)
-    
-    frame.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement then
-            dragInput = input
-        end
-    end)
-    
-    UserInputService.InputChanged:Connect(function(input)
-        if input == dragInput and dragging then
-            local delta = input.Position - dragStart
-            frame.Position = UDim2.new(
-                startPos.X.Scale, startPos.X.Offset + delta.X, 
-                startPos.Y.Scale, startPos.Y.Offset + delta.Y
-            )
-        end
-    end)
-end
-
--- --- PHẦN 1: NÚT BẬT/TẮT NHỎ (TOGGLE BUTTON) ---
-local ToggleBtn = Instance.new("TextButton")
-ToggleBtn.Name = "ToggleButton"
-ToggleBtn.Size = UDim2.new(100,10) -- Kích thước thanh ngang nhỏ
-ToggleBtn.Position = UDim2.new(0.1, 0, 0.1, 0) -- Vị trí mặc định ở góc
-ToggleBtn.BackgroundColor3 = UI_CONFIG.AccentColor
-ToggleBtn.Text = ""
-ToggleBtn.TextColor3 = UI_CONFIG.TextColor
-ToggleBtn.Font = Enum.Font.SourceSansBold
-ToggleBtn.TextSize = 14
-ToggleBtn.Parent = ScreenGui
-
--- Bo tròn nút bật tắt
-local ToggleCorner = Instance.new("UICorner")
-ToggleCorner.CornerRadius = UDim.new(0, 8)
-ToggleCorner.Parent = ToggleBtn
-
--- Cho phép kéo nút bật tắt
-makeDraggable(ToggleBtn)
-
--- --- PHẦN 2: KHUNG CHÍNH (MAIN FRAME) ---
 local MainFrame = Instance.new("Frame")
-MainFrame.Name = "MainFrame"
-MainFrame.Size = UDim2.new(0, 220, 0, 230)
-MainFrame.Position = UDim2.new(0.5, -110, 0.5, -115) 
-MainFrame.BackgroundColor3 = UI_CONFIG.MainColor
-MainFrame.BorderSizePixel = 0
-MainFrame.Visible = false -- Mặc định hiện
-MainFrame.Parent = ScreenGui
+local Title = Instance.new("TextLabel")
+local SpeedInput = Instance.new("TextBox")
+local JumpInput = Instance.new("TextBox")
+local ToggleBtn = Instance.new("TextButton")
+local UICorner = Instance.new("UICorner")
 
--- Bo tròn góc MainFrame
-local MainCorner = Instance.new("UICorner")
-MainCorner.CornerRadius = UDim.new(0, 8)
-MainCorner.Parent = MainFrame
+-- Thiết lập ScreenGui
+ScreenGui.Name = "CompactMenu"
+ScreenGui.Parent = game.CoreGui
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+-- Thiết lập Main Frame (Giao diện chính)
+MainFrame.Name = "MainFrame"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+MainFrame.Position = UDim2.new(0.5, -75, 0.5, -75)
+MainFrame.Size = UDim2.new(0, 150, 0, 180)
+MainFrame.Active = true
+MainFrame.Draggable = true -- Tính năng kéo thả cơ bản
+
+local Corner = Instance.new("UICorner", MainFrame)
+Corner.CornerRadius = UDim.new(0, 10)
 
 -- Tiêu đề
-local Title = Instance.new("TextLabel")
-Title.Text = "CONTROL PANEL"
-Title.Size = UDim2.new(1, 0, 0, 30)
-Title.BackgroundTransparency = 1
-Title.TextColor3 = UI_CONFIG.TextColor
-Title.Font = Enum.Font.SourceSansBold
-Title.TextSize = 18
 Title.Parent = MainFrame
+Title.BackgroundTransparency = 1
+Title.Size = UDim2.new(1, 0, 0, 30)
+Title.Font = Enum.Font.GothamBold
+Title.Text = "COMPACT MOD"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextSize = 14
 
--- Cho phép kéo khung chính
-makeDraggable(MainFrame)
+-- Ô nhập Tốc độ (Speed)
+SpeedInput.Parent = MainFrame
+SpeedInput.PlaceholderText = "Speed (16)..."
+SpeedInput.Size = UDim2.new(0.8, 0, 0, 30)
+SpeedInput.Position = UDim2.new(0.1, 0, 0.25, 0)
+SpeedInput.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+SpeedInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+Instance.new("UICorner", SpeedInput)
 
--- --- LOGIC NÚT BẬT/TẮT ---
+-- Ô nhập Nhảy cao (Jump)
+JumpInput.Parent = MainFrame
+JumpInput.PlaceholderText = "Jump (50)..."
+JumpInput.Size = UDim2.new(0.8, 0, 0, 30)
+JumpInput.Position = UDim2.new(0.1, 0, 0.45, 0)
+JumpInput.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+JumpInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+Instance.new("UICorner", JumpInput)
+
+-- Nút Toggle (Bật/Tắt)
+ToggleBtn.Parent = MainFrame
+ToggleBtn.Name = "ToggleBtn"
+ToggleBtn.Text = "APPLY"
+ToggleBtn.Size = UDim2.new(0.8, 0, 0, 35)
+ToggleBtn.Position = UDim2.new(0.1, 0, 0.7, 0)
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 127)
+ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleBtn.Font = Enum.Font.GothamBold
+Instance.new("UICorner", ToggleBtn)
+
+-- LOGIC XỬ LÝ
+local active = false
+
 ToggleBtn.MouseButton1Click:Connect(function()
-    MainFrame.Visible = not MainFrame.Visible
-    if MainFrame.Visible then
-        ToggleBtn.Text = ""
-        ToggleBtn.BackgroundColor3 = UI_CONFIG.AccentColor
-    else
-        ToggleBtn.Text = ""
-        ToggleBtn.BackgroundColor3 = UI_CONFIG.SecondaryColor
-    end
-end)
-
--- --- HÀM TẠO THANH KÉO (SLIDER) ---
-local function createControl(name, yPos, typeStr)
-    local Container = Instance.new("Frame")
-    Container.Size = UDim2.new(0.9, 0, 0, 80)
-    Container.Position = UDim2.new(0.05, 0, 0, yPos)
-    Container.BackgroundColor3 = UI_CONFIG.SecondaryColor
-    Container.BorderSizePixel = 0
-    Container.Parent = MainFrame
-    Instance.new("UICorner", Container).CornerRadius = UDim.new(0, 6)
-
-    -- Tên chức năng
-    local Label = Instance.new("TextLabel")
-    Label.Text = name
-    Label.Size = UDim2.new(1, -60, 0, 30)
-    Label.Position = UDim2.new(0, 10, 0, 0)
-    Label.BackgroundTransparency = 1
-    Label.TextColor3 = UI_CONFIG.TextColor
-    Label.Font = Enum.Font.SourceSansSemibold
-    Label.TextSize = 16
-    Label.TextXAlignment = Enum.TextXAlignment.Left
-    Label.Parent = Container
-
-    -- Nút Bật/Tắt Chức năng
-    local FuncToggle = Instance.new("TextButton")
-    FuncToggle.Size = UDim2.new(0, 40, 0, 20)
-    FuncToggle.Position = UDim2.new(1, -50, 0, 5)
-    FuncToggle.BackgroundColor3 = UI_CONFIG.ToggleOff
-    FuncToggle.Text = "OFF"
-    FuncToggle.TextColor3 = Color3.new(1,1,1)
-    FuncToggle.Font = Enum.Font.SourceSansBold
-    FuncToggle.Parent = Container
-    Instance.new("UICorner", FuncToggle).CornerRadius = UDim.new(0, 4)
-
-    -- Thanh trượt (Background)
-    local SliderBg = Instance.new("TextButton") 
-    SliderBg.Text = ""
-    SliderBg.Size = UDim2.new(0.9, 0, 0, 10)
-    SliderBg.Position = UDim2.new(0.05, 0, 0, 45)
-    SliderBg.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    SliderBg.AutoButtonColor = false
-    SliderBg.Parent = Container
-    Instance.new("UICorner", SliderBg).CornerRadius = UDim.new(1, 0)
-
-    -- Thanh trượt (Fill)
-    local SliderFill = Instance.new("Frame")
-    SliderFill.Size = UDim2.new(0, 0, 1, 0) 
-    SliderFill.BackgroundColor3 = UI_CONFIG.AccentColor
-    SliderFill.BorderSizePixel = 0
-    SliderFill.Parent = SliderBg
-    Instance.new("UICorner", SliderFill).CornerRadius = UDim.new(1, 0)
-
-    -- Hiển thị số
-    local ValueLabel = Instance.new("TextLabel")
-    ValueLabel.Text = "Value: 0"
-    ValueLabel.Size = UDim2.new(1, 0, 0, 20)
-    ValueLabel.Position = UDim2.new(0, 0, 0, 60)
-    ValueLabel.BackgroundTransparency = 1
-    ValueLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-    ValueLabel.TextSize = 14
-    ValueLabel.Parent = Container
-
-    -- --- LOGIC ---
-    local currentData = state[typeStr]
+    local char = game.Players.LocalPlayer.Character
+    local hum = char and char:FindFirstChildOfClass("Humanoid")
     
-    -- Logic Click ON/OFF chức năng
-    FuncToggle.MouseButton1Click:Connect(function()
-        currentData.enabled = not currentData.enabled
-        if currentData.enabled then
-            FuncToggle.Text = "ON"
-            FuncToggle.BackgroundColor3 = UI_CONFIG.ToggleOn
+    if hum then
+        active = not active
+        if active then
+            -- Áp dụng chỉ số
+            hum.WalkSpeed = tonumber(SpeedInput.Text) or 16
+            hum.JumpPower = tonumber(JumpInput.Text) or 50
+            ToggleBtn.Text = "RESET"
+            ToggleBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
         else
-            FuncToggle.Text = "OFF"
-            FuncToggle.BackgroundColor3 = UI_CONFIG.ToggleOff
             -- Reset về mặc định
-            local char = LocalPlayer.Character
-            if char and char:FindFirstChild("Humanoid") then
-                if typeStr == "speed" then char.Humanoid.WalkSpeed = 16 end
-                if typeStr == "jump" then char.Humanoid.JumpPower = 50 end
-            end
-        end
-    end)
-
-    -- Logic Kéo Slider
-    local mouse = LocalPlayer:GetMouse()
-    local draggingSlider = false
-
-    local function updateSlider()
-        local percent = math.clamp((mouse.X - SliderBg.AbsolutePosition.X) / SliderBg.AbsoluteSize.X, 0, 1)
-        SliderFill.Size = UDim2.new(percent, 0, 1, 0)
-        
-        local newValue = math.floor(percent * currentData.sliderMax)
-        currentData.value = newValue
-        ValueLabel.Text = "Value: " .. newValue
-    end
-
-    SliderBg.MouseButton1Down:Connect(function()
-        draggingSlider = true
-        updateSlider()
-    end)
-
-    UserInputService.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            draggingSlider = false
-        end
-    end)
-
-    UserInputService.InputChanged:Connect(function(input)
-        if draggingSlider and input.UserInputType == Enum.UserInputType.MouseMovement then
-            updateSlider()
-        end
-    end)
-end
-
--- Tạo 2 bộ điều khiển
-createControl("Tốc Độ Chạy", 40, "speed")
-createControl("Độ Nhảy Cao", 130, "jump")
-
--- --- VÒNG LẶP ÁP DỤNG ---
-RunService.RenderStepped:Connect(function()
-    local char = LocalPlayer.Character
-    if char and char:FindFirstChild("Humanoid") then
-        if state.speed.enabled then
-            char.Humanoid.WalkSpeed = state.speed.value
-        end
-        if state.jump.enabled then
-            char.Humanoid.UseJumpPower = true 
-            char.Humanoid.JumpPower = state.jump.value
+            hum.WalkSpeed = 16
+            hum.JumpPower = 50
+            ToggleBtn.Text = "APPLY"
+            ToggleBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 127)
         end
     end
 end)
 
-print("UI Loaded: Draggable & Toggle Button Added!")
+-- Phím tắt ẩn/hiện menu (Phím L)
+game:GetService("UserInputService").InputBegan:Connect(function(input, gpe)
+    if not gpe and input.KeyCode == Enum.KeyCode.L then
+        MainFrame.Visible = not MainFrame.Visible
+    end
+end)
