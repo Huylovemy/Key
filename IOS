@@ -1,0 +1,419 @@
+--[[
+    BEAR HUB - IOS EDITION
+    Remade by: Gemini AI
+    Original Logic: Quang Huy
+]]
+
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local CoreGui = game:GetService("CoreGui")
+local HttpService = game:GetService("HttpService")
+
+-- // IOS LIBRARY SETUP // --
+local iOSLibrary = {}
+local UIConfig = {
+    Color = {
+        Background = Color3.fromRGB(0, 0, 0), -- Pure Black (OLED)
+        Card = Color3.fromRGB(28, 28, 30), -- iOS System Gray 6
+        Text = Color3.fromRGB(255, 255, 255),
+        SubText = Color3.fromRGB(142, 142, 147),
+        Blue = Color3.fromRGB(10, 132, 255), -- iOS Blue
+        Green = Color3.fromRGB(48, 209, 88), -- iOS Green
+        Separator = Color3.fromRGB(56, 56, 58)
+    },
+    Font = {
+        Bold = Enum.Font.GothamBold,
+        Medium = Enum.Font.GothamMedium,
+        Regular = Enum.Font.Gotham
+    }
+}
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "BearHub_iOS"
+ScreenGui.Parent = CoreGui
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+-- Xóa UI cũ nếu có
+if CoreGui:FindFirstChild("BearHub_Toggle_Square") then CoreGui.BearHub_Toggle_Square:Destroy() end
+if CoreGui:FindFirstChild("BearHubKeySystem") then CoreGui.BearHubKeySystem:Destroy() end
+
+-- Helper Functions
+local function MakeDraggable(frame, handle)
+    local dragging, dragInput, dragStart, startPos
+    handle.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = frame.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then dragging = false end
+            end)
+        end
+    end)
+    handle.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            if dragging then
+                local delta = input.Position - dragStart
+                TweenService:Create(frame, TweenInfo.new(0.15), {Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)}):Play()
+            end
+        end
+    end)
+end
+
+function iOSLibrary:MakeWindow(Config)
+    local Title = Config.Title or "Settings"
+    local SubTitle = Config.SubTitle or "Bear Hub"
+    
+    local MainFrame = Instance.new("Frame")
+    local Island = Instance.new("Frame")
+    local Container = Instance.new("ScrollingFrame")
+    local UIListLayout = Instance.new("UIListLayout")
+    local UIPadding = Instance.new("UIPadding")
+
+    MainFrame.Name = "MainFrame"
+    MainFrame.Parent = ScreenGui
+    MainFrame.BackgroundColor3 = UIConfig.Color.Background
+    MainFrame.Position = UDim2.new(0.5, -160, 0.5, -200)
+    MainFrame.Size = UDim2.new(0, 320, 0, 450)
+    MainFrame.BorderSizePixel = 0
+    
+    -- Bo góc màn hình điện thoại
+    local MainCorner = Instance.new("UICorner")
+    MainCorner.CornerRadius = UDim.new(0, 24)
+    MainCorner.Parent = MainFrame
+    
+    local MainStroke = Instance.new("UIStroke")
+    MainStroke.Color = Color3.fromRGB(60,60,60)
+    MainStroke.Thickness = 1.5
+    MainStroke.Parent = MainFrame
+
+    -- Dynamic Island (Header)
+    Island.Name = "DynamicIsland"
+    Island.Parent = MainFrame
+    Island.BackgroundColor3 = Color3.fromRGB(44, 44, 46)
+    Island.Position = UDim2.new(0.5, -60, 0, 10)
+    Island.Size = UDim2.new(0, 120, 0, 30)
+    Island.ZIndex = 2
+    
+    local IslandCorner = Instance.new("UICorner")
+    IslandCorner.CornerRadius = UDim.new(1, 0)
+    IslandCorner.Parent = Island
+
+    local TitleLabel = Instance.new("TextLabel")
+    TitleLabel.Parent = MainFrame
+    TitleLabel.BackgroundTransparency = 1
+    TitleLabel.Position = UDim2.new(0, 20, 0, 50)
+    TitleLabel.Size = UDim2.new(1, -40, 0, 30)
+    TitleLabel.Font = UIConfig.Font.Bold
+    TitleLabel.Text = Title
+    TitleLabel.TextColor3 = UIConfig.Color.Text
+    TitleLabel.TextSize = 28
+    TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+    local SubLabel = Instance.new("TextLabel")
+    SubLabel.Parent = MainFrame
+    SubLabel.BackgroundTransparency = 1
+    SubLabel.Position = UDim2.new(0, 20, 0, 80)
+    SubLabel.Size = UDim2.new(1, -40, 0, 20)
+    SubLabel.Font = UIConfig.Font.Medium
+    SubLabel.Text = SubTitle
+    SubLabel.TextColor3 = UIConfig.Color.SubText
+    SubLabel.TextSize = 14
+    SubLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+    -- Container Scroll
+    Container.Name = "Container"
+    Container.Parent = MainFrame
+    Container.Active = true
+    Container.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Container.BackgroundTransparency = 1
+    Container.BorderSizePixel = 0
+    Container.Position = UDim2.new(0, 0, 0, 110)
+    Container.Size = UDim2.new(1, 0, 1, -120)
+    Container.ScrollBarThickness = 2
+    Container.ScrollBarImageColor3 = UIConfig.Color.SubText
+
+    UIListLayout.Parent = Container
+    UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    UIListLayout.Padding = UDim.new(0, 15)
+
+    UIPadding.Parent = Container
+    UIPadding.PaddingTop = UDim.new(0, 10)
+    UIPadding.PaddingLeft = UDim.new(0, 15)
+    UIPadding.PaddingRight = UDim.new(0, 15)
+    UIPadding.PaddingBottom = UDim.new(0, 20)
+
+    -- Close Button (Giả lập nút nguồn hoặc vuốt)
+    local CloseBtn = Instance.new("TextButton")
+    CloseBtn.Parent = Island
+    CloseBtn.BackgroundTransparency = 1
+    CloseBtn.Size = UDim2.new(1,0,1,0)
+    CloseBtn.Text = ""
+    CloseBtn.MouseButton1Click:Connect(function()
+        MainFrame.Visible = not MainFrame.Visible
+    end)
+
+    MakeDraggable(MainFrame, Island)
+    MakeDraggable(MainFrame, MainFrame)
+
+    local Window = {}
+
+    function Window:AddGroup(GroupName)
+        local GroupFrame = Instance.new("Frame")
+        local GroupCorner = Instance.new("UICorner")
+        local GroupList = Instance.new("UIListLayout")
+        
+        GroupFrame.Name = GroupName
+        GroupFrame.Parent = Container
+        GroupFrame.BackgroundColor3 = UIConfig.Color.Card
+        GroupFrame.Size = UDim2.new(1, 0, 0, 0) -- Auto resize
+        GroupFrame.AutomaticSize = Enum.AutomaticSize.Y
+        
+        GroupCorner.CornerRadius = UDim.new(0, 12)
+        GroupCorner.Parent = GroupFrame
+
+        GroupList.Parent = GroupFrame
+        GroupList.SortOrder = Enum.SortOrder.LayoutOrder
+        GroupList.Padding = UDim.new(0, 1) -- Separator line effect
+
+        local GroupFunc = {}
+
+        function GroupFunc:AddButton(Text, Callback)
+            local Button = Instance.new("TextButton")
+            local BtnText = Instance.new("TextLabel")
+            local Icon = Instance.new("ImageLabel")
+
+            Button.Name = Text
+            Button.Parent = GroupFrame
+            Button.BackgroundColor3 = UIConfig.Color.Card
+            Button.BorderSizePixel = 0
+            Button.Size = UDim2.new(1, 0, 0, 44)
+            Button.AutoButtonColor = true
+            Button.Text = ""
+
+            BtnText.Parent = Button
+            BtnText.BackgroundTransparency = 1
+            BtnText.Position = UDim2.new(0, 15, 0, 0)
+            BtnText.Size = UDim2.new(1, -45, 1, 0)
+            BtnText.Font = UIConfig.Font.Medium
+            BtnText.Text = Text
+            BtnText.TextColor3 = UIConfig.Color.Text
+            BtnText.TextSize = 16
+            BtnText.TextXAlignment = Enum.TextXAlignment.Left
+
+            Icon.Parent = Button
+            Icon.BackgroundTransparency = 1
+            Icon.Position = UDim2.new(1, -30, 0.5, -8)
+            Icon.Size = UDim2.new(0, 16, 0, 16)
+            Icon.Image = "rbxassetid://6031091004" -- Arrow icon
+            Icon.ImageColor3 = UIConfig.Color.SubText
+
+            Button.MouseButton1Click:Connect(function()
+                -- Animation click
+                TweenService:Create(Button, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(44, 44, 46)}):Play()
+                task.wait(0.1)
+                TweenService:Create(Button, TweenInfo.new(0.2), {BackgroundColor3 = UIConfig.Color.Card}):Play()
+                pcall(Callback)
+            end)
+            return Button
+        end
+        
+        -- Thêm Separator giả bằng border nếu cần, nhưng ở đây dùng padding 1px và background container tối
+        return GroupFunc
+    end
+
+    return Window
+end
+
+-- // KEY SYSTEM LOGIC (IOS ALERT STYLE) // --
+local KeySettings = {
+    RealKey = "Huydepzai", 
+    KeyLink = "https://link4m.com/kjzVaRAh", 
+    FileName = "BearHub_Key_iOS.txt" 
+}
+
+local function StartKeySystem()
+    if isfile(KeySettings.FileName) then
+        if readfile(KeySettings.FileName) == KeySettings.RealKey then
+            return true -- Key đúng, chạy hub luôn
+        end
+    end
+
+    local Verified = false
+    local KeyGui = Instance.new("ScreenGui")
+    KeyGui.Name = "BearHubKeySystem"
+    KeyGui.Parent = CoreGui
+    
+    local Backdrop = Instance.new("Frame")
+    Backdrop.Size = UDim2.new(1,0,1,0)
+    Backdrop.BackgroundColor3 = Color3.new(0,0,0)
+    Backdrop.BackgroundTransparency = 0.6
+    Backdrop.Parent = KeyGui
+
+    local Alert = Instance.new("Frame")
+    Alert.Size = UDim2.new(0, 270, 0, 200)
+    Alert.Position = UDim2.new(0.5, -135, 0.5, -100)
+    Alert.BackgroundColor3 = Color3.fromRGB(30,30,30)
+    Alert.Parent = KeyGui
+    Instance.new("UICorner", Alert).CornerRadius = UDim.new(0, 14)
+
+    local Title = Instance.new("TextLabel")
+    Title.Text = "Nhập Key"
+    Title.Font = Enum.Font.GothamBold
+    Title.TextSize = 17
+    Title.TextColor3 = Color3.new(1,1,1)
+    Title.Size = UDim2.new(1,0,0,40)
+    Title.BackgroundTransparency = 1
+    Title.Parent = Alert
+
+    local Msg = Instance.new("TextLabel")
+    Msg.Text = "Vui lòng nhập key để sử dụng Bear Hub."
+    Msg.Font = Enum.Font.Gotham
+    Msg.TextSize = 13
+    Msg.TextColor3 = Color3.new(1,1,1)
+    Msg.Size = UDim2.new(1,0,0,30)
+    Msg.Position = UDim2.new(0,0,0,35)
+    Msg.BackgroundTransparency = 1
+    Msg.Parent = Alert
+
+    local Input = Instance.new("TextBox")
+    Input.Size = UDim2.new(0.85, 0, 0, 30)
+    Input.Position = UDim2.new(0.075, 0, 0.38, 0)
+    Input.BackgroundColor3 = Color3.fromRGB(50,50,50)
+    Input.TextColor3 = Color3.new(1,1,1)
+    Input.PlaceholderText = "Key here..."
+    Input.Font = Enum.Font.Gotham
+    Input.TextSize = 14
+    Input.Parent = Alert
+    Instance.new("UICorner", Input).CornerRadius = UDim.new(0, 6)
+
+    -- Nút Copy Link
+    local LinkBtn = Instance.new("TextButton")
+    LinkBtn.Size = UDim2.new(1, 0, 0, 44)
+    LinkBtn.Position = UDim2.new(0, 0, 1, -89)
+    LinkBtn.BackgroundColor3 = Color3.fromRGB(30,30,30)
+    LinkBtn.BackgroundTransparency = 0.1
+    LinkBtn.Text = "Lấy Key (Copy)"
+    LinkBtn.TextColor3 = Color3.fromRGB(10, 132, 255)
+    LinkBtn.Font = Enum.Font.Gotham
+    LinkBtn.TextSize = 16
+    LinkBtn.Parent = Alert
+    
+    local Border1 = Instance.new("Frame")
+    Border1.Size = UDim2.new(1,0,0,1)
+    Border1.BackgroundColor3 = Color3.fromRGB(60,60,60)
+    Border1.BorderSizePixel = 0
+    Border1.Parent = LinkBtn
+
+    LinkBtn.MouseButton1Click:Connect(function()
+        setclipboard(KeySettings.KeyLink)
+        LinkBtn.Text = "Đã copy link!"
+        wait(1)
+        LinkBtn.Text = "Lấy Key (Copy)"
+    end)
+
+    -- Nút Submit
+    local SubmitBtn = Instance.new("TextButton")
+    SubmitBtn.Size = UDim2.new(1, 0, 0, 44)
+    SubmitBtn.Position = UDim2.new(0, 0, 1, -44)
+    SubmitBtn.BackgroundColor3 = Color3.fromRGB(30,30,30)
+    SubmitBtn.BackgroundTransparency = 0.1
+    SubmitBtn.Text = "Xác nhận"
+    SubmitBtn.TextColor3 = Color3.fromRGB(10, 132, 255)
+    SubmitBtn.Font = Enum.Font.GothamBold
+    SubmitBtn.TextSize = 16
+    SubmitBtn.Parent = Alert
+    
+    local Border2 = Instance.new("Frame")
+    Border2.Size = UDim2.new(1,0,0,1)
+    Border2.BackgroundColor3 = Color3.fromRGB(60,60,60)
+    Border2.BorderSizePixel = 0
+    Border2.Parent = SubmitBtn
+
+    SubmitBtn.MouseButton1Click:Connect(function()
+        if Input.Text == KeySettings.RealKey then
+            writefile(KeySettings.FileName, Input.Text)
+            Verified = true
+            KeyGui:Destroy()
+        else
+            Input.Text = ""
+            Input.PlaceholderText = "Sai Key!"
+            wait(1)
+            Input.PlaceholderText = "Key here..."
+        end
+    end)
+
+    repeat wait() until Verified
+    return true
+end
+
+-- // MAIN SCRIPT EXECUTION // --
+local function RunBearHub()
+    local Window = iOSLibrary:MakeWindow({
+        Title = "Cài đặt",
+        SubTitle = "Bear Hub • v1.1"
+    })
+
+    -- TAB: PvP
+    local GroupPvP = Window:AddGroup("Chiến Đấu (PvP)")
+    GroupPvP:AddButton("PvP Aim Z God", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/Huylovemy/Pvp/refs/heads/main/Huyz"))() end)
+    GroupPvP:AddButton("Hermanos Hub (PvP New)", function() local script_mode = "PVP" loadstring(game:HttpGet("https://raw.githubusercontent.com/hermanos-dev/hermanos-hub/refs/heads/main/Loader.lua"))() end)
+    GroupPvP:AddButton("Huy Top PvP", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/Huylovemy/Huy-Top-PvP/refs/heads/main/PVP%20top"))() end)
+    GroupPvP:AddButton("Krovyn Hub (PvP Top)", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/Krovyn/KrovynHub/refs/heads/main/TOP_PVP"))() end)
+    GroupPvP:AddButton("Ace Ambot", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/Totocoems/Ace/main/Ace"))() end)
+    GroupPvP:AddButton("Tăng Hitbox", function() loadstring(Game:HttpGet("https://raw.githubusercontent.com/VanThanhIOS/OniiChanVanThanhIOS/refs/heads/main/oniichanpakavanthanhios"))() end)
+    GroupPvP:AddButton("Void Hub", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/VoidDeveloper67/VoidHub/refs/heads/main/VoidHub"))() end)
+
+    -- TAB: Farm
+    local GroupFarm = Window:AddGroup("Farm & Auto")
+    GroupFarm:AddButton("Redz Hub (Real)", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/huy384/redzHub/refs/heads/main/redzHub.lua"))() end)
+    GroupFarm:AddButton("Bear Hub (Script)", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/Huylovemy/Huyscript/refs/heads/main/newscript.txt"))() end)
+    GroupFarm:AddButton("Blue X Hub", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/Dev-BlueX/BlueX-Hub/refs/heads/main/Main.lua"))() end)
+    GroupFarm:AddButton("W-Azure (Night Hub)", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/WhiteX1208/Scripts/refs/heads/main/BF-Beta.lua"))() end)
+    GroupFarm:AddButton("Lucky Fruit", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/Ytzeno99/bufflucky/refs/heads/main/LucKyRadomFruit.lua"))() end)
+    GroupFarm:AddButton("Quantum Onyx", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/flazhy/QuantumOnyx/refs/heads/main/QuantumOnyx.lua"))() end)
+    GroupFarm:AddButton("Auto Chest (TN)", function() getgenv().Team = "Marines" loadstring(game:HttpGet("https://raw.githubusercontent.com/trongdeptraihucscript/Main/refs/heads/main/TN-Tp-Chest.lua"))() end)
+
+    -- TAB: Server & Misc
+    local GroupMisc = Window:AddGroup("Máy Chủ & Khác")
+    GroupMisc:AddButton("Hop Server (Huy)", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/Huylovemy/Hop-sv/refs/heads/main/Huylovemy"))() end)
+    GroupMisc:AddButton("No Clip", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/Huylovemy/Key/refs/heads/main/Noclip"))() end)
+    GroupMisc:AddButton("Fix Lag (Boost FPS)", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/TIKTOK-BOYCHOIGAME/PH-ICH-U/refs/heads/main/FIXLAGV2.BOYCHOIGAME"))() end)
+    GroupMisc:AddButton("ESP & AIM", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/Huylovemy/Hack/refs/heads/main/Huydepzai209"))() end)
+    GroupMisc:AddButton("Speed & Jump", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/Huylovemy/Key/refs/heads/main/S"))() end)
+
+    -- Nút bật tắt nhanh (Toggle Button)
+    local ToggleBtn = Instance.new("ImageButton")
+    ToggleBtn.Name = "OpenButton"
+    ToggleBtn.Parent = ScreenGui
+    ToggleBtn.Size = UDim2.new(0, 45, 0, 45)
+    ToggleBtn.Position = UDim2.new(0.05, 0, 0.15, 0)
+    ToggleBtn.BackgroundColor3 = Color3.fromRGB(28, 28, 30)
+    ToggleBtn.Image = "rbxassetid://10734975486" -- Sword Icon
+    ToggleBtn.ImageColor3 = Color3.fromRGB(255, 255, 255)
+    
+    local ToggleCorner = Instance.new("UICorner")
+    ToggleCorner.CornerRadius = UDim.new(1, 0)
+    ToggleCorner.Parent = ToggleBtn
+    
+    local ToggleStroke = Instance.new("UIStroke")
+    ToggleStroke.Color = Color3.fromRGB(60,60,60)
+    ToggleStroke.Thickness = 2
+    ToggleStroke.Parent = ToggleBtn
+    
+    MakeDraggable(ToggleBtn, ToggleBtn)
+    
+    local WindowFrame = ScreenGui:FindFirstChild("MainFrame")
+    ToggleBtn.MouseButton1Click:Connect(function()
+        WindowFrame.Visible = not WindowFrame.Visible
+    end)
+end
+
+-- Bắt đầu
+if game:IsLoaded() then
+    if StartKeySystem() then RunBearHub() end
+else
+    game.Loaded:Connect(function()
+        if StartKeySystem() then RunBearHub() end
+    end)
+end
