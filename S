@@ -1,160 +1,167 @@
--- DỊCH VỤ VÀ BIẾN CỤC BỘ
+--[[ 
+    FIXED BEAR HUB - DROPDOWN STYLE
+    - Toggle Button: Ở trên cùng, lệch phải.
+    - Menu: Xuất hiện NGAY DƯỚI nút Toggle.
+]]
+
+-- 1. DỊCH VỤ
 local Players = game:GetService("Players")
-local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
 local Player = Players.LocalPlayer or Players.PlayerAdded:Wait()
 
--- Đợi PlayerGui load xong
+-- Đợi PlayerGui
 local PlayerGui = Player:WaitForChild("PlayerGui", 10)
-if not PlayerGui then 
-    warn("Không tìm thấy PlayerGui!") 
-    return 
+if not PlayerGui then return end
+
+-- 2. DỌN DẸP GUI CŨ
+for _, v in pairs(PlayerGui:GetChildren()) do
+    if v.Name == "BearHub_Dropdown" then v:Destroy() end
 end
 
--- XÓA GUI CŨ
-if PlayerGui:FindFirstChild("FixedBearHub") then
-    PlayerGui.FixedBearHub:Destroy()
-end
-
--- TẠO GUI
+-- 3. TẠO GUI
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "FixedBearHub"
-ScreenGui.Parent = PlayerGui 
+ScreenGui.Name = "BearHub_Dropdown"
+ScreenGui.Parent = PlayerGui
 ScreenGui.ResetOnSpawn = false
 ScreenGui.IgnoreGuiInset = true 
 ScreenGui.DisplayOrder = 9999 
 
--- CÁC PHẦN TỬ GIAO DIỆN
-local HomeBar = Instance.new("TextButton") 
+----------------------------------------------------------------
+-- A. NÚT TOGGLE (VỊ TRÍ NEO)
+----------------------------------------------------------------
+local HomeBarWrapper = Instance.new("TextButton")
+HomeBarWrapper.Name = "HomeBarTrigger"
+HomeBarWrapper.Parent = ScreenGui
+HomeBarWrapper.Size = UDim2.new(0, 120, 0, 40) -- Chiều cao 40
+HomeBarWrapper.AnchorPoint = Vector2.new(0.5, 0) -- Neo ở giữa cạnh trên
+
+-- [VỊ TRÍ NÚT]: 0.65 (Lệch phải), 0, 5 (Cách mép trên 5px)
+HomeBarWrapper.Position = UDim2.new(0.65, 0, 0, 5) 
+
+HomeBarWrapper.BackgroundTransparency = 1
+HomeBarWrapper.Text = ""
+
+-- Thanh hiển thị (Visual)
+local HomeBarVisual = Instance.new("Frame")
+HomeBarVisual.Parent = HomeBarWrapper
+HomeBarVisual.Size = UDim2.new(0, 80, 0, 6) 
+HomeBarVisual.AnchorPoint = Vector2.new(0.5, 0.5)
+HomeBarVisual.Position = UDim2.new(0.5, 0, 0.5, 0) 
+HomeBarVisual.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+HomeBarVisual.BackgroundTransparency = 0.4
+Instance.new("UICorner", HomeBarVisual).CornerRadius = UDim.new(1, 0)
+
+----------------------------------------------------------------
+-- B. MENU CHÍNH (ĐẶT NGAY DƯỚI NÚT)
+----------------------------------------------------------------
 local MainFrame = Instance.new("Frame")
-local SpeedInput = Instance.new("TextBox")
-local JumpInput = Instance.new("TextBox")
-local ApplyBtn = Instance.new("TextButton")
-
-----------------------------------------------------------------
--- 1. THANH NGANG (HOME BAR)
-----------------------------------------------------------------
-HomeBar.Name = "HomeBar"
-HomeBar.Parent = ScreenGui
-HomeBar.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-HomeBar.BackgroundTransparency = 0.3 
-HomeBar.BorderSizePixel = 0
-
--- VỊ TRÍ: Giữa màn hình, sát mép trên
-HomeBar.AnchorPoint = Vector2.new(0.5, 0) 
-HomeBar.Position = UDim2.new(0.5, 0, 0, 8) -- Cách mép trên 8px
-
--- [ĐÃ CHỈNH SỬA]: Chiều ngang về lại 80, chiều cao 8
-HomeBar.Size = UDim2.new(0, 120, 0, 5) 
-
-HomeBar.Text = "" -- Không chữ
-HomeBar.AutoButtonColor = false
-
-local BarCorner = Instance.new("UICorner", HomeBar)
-BarCorner.CornerRadius = UDim.new(1, 0) 
-
-----------------------------------------------------------------
--- 2. GIAO DIỆN CHÍNH (MAIN FRAME)
-----------------------------------------------------------------
 MainFrame.Name = "MainFrame"
-MainFrame.Parent = HomeBar 
-MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+MainFrame.Parent = ScreenGui 
+MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 MainFrame.ClipsDescendants = true
 
--- VỊ TRÍ: Căn giữa theo thanh HomeBar
-MainFrame.AnchorPoint = Vector2.new(0.5, 0)
--- Cách thanh HomeBar khoảng 20px (Scale Y = 2.5 * 8px = 20px)
-MainFrame.Position = UDim2.new(0.5, 0, 2.5, 0) 
-MainFrame.Size = UDim2.new(0, 140, 0, 150) 
-MainFrame.Visible = false 
+-- [QUAN TRỌNG] CĂN CHỈNH VỊ TRÍ
+-- Neo ở giữa cạnh trên (để nó thả xuống dưới)
+MainFrame.AnchorPoint = Vector2.new(0.5, 0) 
+
+-- X = 0.65 (Giống hệt nút Toggle để thẳng hàng dọc)
+-- Y = 50 (Cách mép trên 50px = 5px lề + 40px chiều cao nút + 5px khoảng cách)
+MainFrame.Position = UDim2.new(0.65, 0, 0, 50) 
+
+MainFrame.Size = UDim2.new(0, 150, 0, 160) 
+MainFrame.Visible = true 
 MainFrame.BorderSizePixel = 0
 
-local MainCorner = Instance.new("UICorner", MainFrame)
-MainCorner.CornerRadius = UDim.new(0, 8)
+-- Bo góc
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 10)
 
-----------------------------------------------------------------
--- CÁC THÀNH PHẦN CON
-----------------------------------------------------------------
--- Label Tiêu đề
+-- Tiêu đề
 local Title = Instance.new("TextLabel", MainFrame)
-Title.Size = UDim2.new(1, 0, 0, 25)
+Title.Size = UDim2.new(1, 0, 0, 30)
 Title.BackgroundTransparency = 1
 Title.Text = "Bear Hub"
-Title.TextColor3 = Color3.fromRGB(200, 200, 200)
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.Font = Enum.Font.GothamBold
-Title.TextSize = 13
-Title.Position = UDim2.new(0,0,0,5)
+Title.TextSize = 14
 
 -- Input Tốc độ
+local SpeedInput = Instance.new("TextBox")
 SpeedInput.Parent = MainFrame
 SpeedInput.PlaceholderText = "Speed..."
-SpeedInput.Size = UDim2.new(0.85, 0, 0, 28)
-SpeedInput.Position = UDim2.new(0.075, 0, 0.25, 0)
-SpeedInput.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+SpeedInput.Size = UDim2.new(0.85, 0, 0, 30)
+SpeedInput.Position = UDim2.new(0.075, 0, 0.22, 0)
+SpeedInput.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 SpeedInput.TextColor3 = Color3.fromRGB(255, 255, 255)
 SpeedInput.Text = "100"
-Instance.new("UICorner", SpeedInput)
+Instance.new("UICorner", SpeedInput).CornerRadius = UDim.new(0, 6)
 
 -- Input Nhảy
+local JumpInput = Instance.new("TextBox")
 JumpInput.Parent = MainFrame
 JumpInput.PlaceholderText = "Jump..."
-JumpInput.Size = UDim2.new(0.85, 0, 0, 28)
-JumpInput.Position = UDim2.new(0.075, 0, 0.5, 0)
-JumpInput.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+JumpInput.Size = UDim2.new(0.85, 0, 0, 30)
+JumpInput.Position = UDim2.new(0.075, 0, 0.47, 0)
+JumpInput.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 JumpInput.TextColor3 = Color3.fromRGB(255, 255, 255)
 JumpInput.Text = "100"
-Instance.new("UICorner", JumpInput)
+Instance.new("UICorner", JumpInput).CornerRadius = UDim.new(0, 6)
 
 -- Nút Apply
+local ApplyBtn = Instance.new("TextButton")
 ApplyBtn.Parent = MainFrame
 ApplyBtn.Text = "APPLY"
-ApplyBtn.Size = UDim2.new(0.85, 0, 0, 28)
+ApplyBtn.Size = UDim2.new(0.85, 0, 0, 30)
 ApplyBtn.Position = UDim2.new(0.075, 0, 0.75, 0)
 ApplyBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 ApplyBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
 ApplyBtn.Font = Enum.Font.GothamBold
-Instance.new("UICorner", ApplyBtn)
+Instance.new("UICorner", ApplyBtn).CornerRadius = UDim.new(0, 6)
 
 ----------------------------------------------------------------
--- LOGIC
+-- C. LOGIC
 ----------------------------------------------------------------
+
+-- Toggle Menu
+local isMenuOpen = false
+HomeBarWrapper.MouseButton1Click:Connect(function()
+    isMenuOpen = not isMenuOpen
+    MainFrame.Visible = isMenuOpen
+    
+    -- Hiệu ứng nút
+    TweenService:Create(HomeBarVisual, TweenInfo.new(0.15), {BackgroundTransparency = 0.1}):Play()
+    task.wait(0.15)
+    TweenService:Create(HomeBarVisual, TweenInfo.new(0.15), {BackgroundTransparency = 0.4}):Play()
+end)
+
+-- Speed/Jump Logic
 local active = false
-
 local function setStats(char)
     if not char then return end
-    local hum = char:WaitForChild("Humanoid", 3)
+    local hum = char:FindFirstChild("Humanoid")
     if hum and active then
         pcall(function()
-            hum.WalkSpeed = tonumber(SpeedInput.Text) or 16
-            hum.JumpPower = tonumber(JumpInput.Text) or 50
+            if tonumber(SpeedInput.Text) then hum.WalkSpeed = tonumber(SpeedInput.Text) end
+            if tonumber(JumpInput.Text) then 
+                hum.UseJumpPower = true
+                hum.JumpPower = tonumber(JumpInput.Text) 
+            end
         end)
     end
 end
 
--- Toggle Menu
-HomeBar.MouseButton1Click:Connect(function()
-    MainFrame.Visible = not MainFrame.Visible
-end)
-
--- Auto Update
 task.spawn(function()
     while true do
-        task.wait(1)
-        if active and Player.Character then
-            setStats(Player.Character)
-        end
+        task.wait()
+        if active and Player.Character then setStats(Player.Character) end
     end
 end)
 
--- Nút Apply Logic
 ApplyBtn.MouseButton1Click:Connect(function()
     active = not active
     local char = Player.Character
-    
     if active then
-        ApplyBtn.Text = "RESET"
+        ApplyBtn.Text = "STOP"
         ApplyBtn.BackgroundColor3 = Color3.fromRGB(255, 80, 80)
-        setStats(char)
     else
         ApplyBtn.Text = "APPLY"
         ApplyBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
@@ -167,6 +174,6 @@ end)
 
 game.StarterGui:SetCore("SendNotification", {
     Title = "Bear Hub",
-    Text = "Đã Tải Xong !!!",
-    Duration = 5
+    Text = "Menu Dropdown Ready!",
+    Duration = 3
 })
