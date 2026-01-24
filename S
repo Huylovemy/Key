@@ -45,7 +45,7 @@ HomeBar.AnchorPoint = Vector2.new(0.5, 0)
 HomeBar.Position = UDim2.new(0.5, 0, 0, 8) -- Cách mép trên 8px
 
 -- [ĐÃ CHỈNH SỬA]: Chiều ngang về lại 80, chiều cao 8
-HomeBar.Size = UDim2.new(0, 80, 0, 8) 
+HomeBar.Size = UDim2.new(0, 120, 0, 5) 
 
 HomeBar.Text = "" -- Không chữ
 HomeBar.AutoButtonColor = false
@@ -167,6 +167,6 @@ end)
 
 game.StarterGui:SetCore("SendNotification", {
     Title = "Bear Hub",
-    Text = "Đã chỉnh ngang 80!",
+    Text = "Đã Tải Xong !!!",
     Duration = 5
 })
