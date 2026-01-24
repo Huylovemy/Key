@@ -1,112 +1,129 @@
 -- DỊCH VỤ VÀ BIẾN CỤC BỘ
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
 local Player = Players.LocalPlayer or Players.PlayerAdded:Wait()
 
--- XÓA GUI CŨ NẾU CÓ (Tránh bị chồng lấn nhiều menu)
-if game.CoreGui:FindFirstChild("FixedTopBarMenu") then
-    game.CoreGui.FixedTopBarMenu:Destroy()
+-- Đợi PlayerGui load xong
+local PlayerGui = Player:WaitForChild("PlayerGui", 10)
+if not PlayerGui then 
+    warn("Không tìm thấy PlayerGui!") 
+    return 
 end
-if Player:WaitForChild("PlayerGui"):FindFirstChild("FixedTopBarMenu") then
-    Player.PlayerGui.FixedTopBarMenu:Destroy()
+
+-- XÓA GUI CŨ
+if PlayerGui:FindFirstChild("FixedBearHub") then
+    PlayerGui.FixedBearHub:Destroy()
 end
 
 -- TẠO GUI
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "FixedTopBarMenu"
-ScreenGui.ResetOnSpawn = false -- QUAN TRỌNG: Giữ GUI không bị mất khi chết
-
--- THỬ ĐƯA VÀO COREGUI (Ưu tiên), NẾU KHÔNG ĐƯỢC THÌ ĐƯA VÀO PLAYERGUI
-local success, _ = pcall(function()
-    ScreenGui.Parent = game.CoreGui
-end)
-if not success then
-    ScreenGui.Parent = Player:WaitForChild("PlayerGui")
-end
+ScreenGui.Name = "FixedBearHub"
+ScreenGui.Parent = PlayerGui 
+ScreenGui.ResetOnSpawn = false
+ScreenGui.IgnoreGuiInset = true 
+ScreenGui.DisplayOrder = 9999 
 
 -- CÁC PHẦN TỬ GIAO DIỆN
-local MainFrame = Instance.new("Frame")
 local HomeBar = Instance.new("TextButton") 
+local MainFrame = Instance.new("Frame")
 local SpeedInput = Instance.new("TextBox")
 local JumpInput = Instance.new("TextBox")
 local ApplyBtn = Instance.new("TextButton")
 
+----------------------------------------------------------------
 -- 1. THANH NGANG (HOME BAR)
+----------------------------------------------------------------
 HomeBar.Name = "HomeBar"
 HomeBar.Parent = ScreenGui
 HomeBar.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-HomeBar.BackgroundTransparency = 0.2
+HomeBar.BackgroundTransparency = 0.3 
 HomeBar.BorderSizePixel = 0
-HomeBar.Position = UDim2.new(0, 10, 0, 0) -- Sát mép trên
-HomeBar.Size = UDim2.new(0, 80, 0, 6) -- Dày hơn chút cho dễ bấm
-HomeBar.Text = ""
+
+-- VỊ TRÍ: Giữa màn hình, sát mép trên
+HomeBar.AnchorPoint = Vector2.new(0.5, 0) 
+HomeBar.Position = UDim2.new(0.5, 0, 0, 8) -- Cách mép trên 8px
+
+-- [ĐÃ CHỈNH SỬA]: Chiều ngang về lại 80, chiều cao 8
+HomeBar.Size = UDim2.new(0, 80, 0, 8) 
+
+HomeBar.Text = "" -- Không chữ
 HomeBar.AutoButtonColor = false
 
 local BarCorner = Instance.new("UICorner", HomeBar)
-BarCorner.CornerRadius = UDim.new(1, 0)
+BarCorner.CornerRadius = UDim.new(1, 0) 
 
+----------------------------------------------------------------
 -- 2. GIAO DIỆN CHÍNH (MAIN FRAME)
+----------------------------------------------------------------
 MainFrame.Name = "MainFrame"
 MainFrame.Parent = HomeBar 
-MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-MainFrame.Position = UDim2.new(0, 0, 0, 20) 
-MainFrame.Size = UDim2.new(0, 140, 0, 150)
-MainFrame.Visible = true 
+MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+MainFrame.ClipsDescendants = true
+
+-- VỊ TRÍ: Căn giữa theo thanh HomeBar
+MainFrame.AnchorPoint = Vector2.new(0.5, 0)
+-- Cách thanh HomeBar khoảng 20px (Scale Y = 2.5 * 8px = 20px)
+MainFrame.Position = UDim2.new(0.5, 0, 2.5, 0) 
+MainFrame.Size = UDim2.new(0, 140, 0, 150) 
+MainFrame.Visible = false 
 MainFrame.BorderSizePixel = 0
 
 local MainCorner = Instance.new("UICorner", MainFrame)
 MainCorner.CornerRadius = UDim.new(0, 8)
 
--- LABEL TIÊU ĐỀ
+----------------------------------------------------------------
+-- CÁC THÀNH PHẦN CON
+----------------------------------------------------------------
+-- Label Tiêu đề
 local Title = Instance.new("TextLabel", MainFrame)
-Title.Size = UDim2.new(1, 0, 0, 20)
+Title.Size = UDim2.new(1, 0, 0, 25)
 Title.BackgroundTransparency = 1
 Title.Text = "Bear Hub"
 Title.TextColor3 = Color3.fromRGB(200, 200, 200)
 Title.Font = Enum.Font.GothamBold
-Title.TextSize = 12
+Title.TextSize = 13
+Title.Position = UDim2.new(0,0,0,5)
 
 -- Input Tốc độ
 SpeedInput.Parent = MainFrame
-SpeedInput.PlaceholderText = "Speed (16)"
-SpeedInput.Size = UDim2.new(0.85, 0, 0, 30)
-SpeedInput.Position = UDim2.new(0.075, 0, 0.2, 0)
-SpeedInput.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+SpeedInput.PlaceholderText = "Speed..."
+SpeedInput.Size = UDim2.new(0.85, 0, 0, 28)
+SpeedInput.Position = UDim2.new(0.075, 0, 0.25, 0)
+SpeedInput.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 SpeedInput.TextColor3 = Color3.fromRGB(255, 255, 255)
-SpeedInput.Text = "100" -- Giá trị gợi ý sẵn
+SpeedInput.Text = "100"
 Instance.new("UICorner", SpeedInput)
 
 -- Input Nhảy
 JumpInput.Parent = MainFrame
-JumpInput.PlaceholderText = "Jump (50)"
-JumpInput.Size = UDim2.new(0.85, 0, 0, 30)
-JumpInput.Position = UDim2.new(0.075, 0, 0.45, 0)
-JumpInput.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+JumpInput.PlaceholderText = "Jump..."
+JumpInput.Size = UDim2.new(0.85, 0, 0, 28)
+JumpInput.Position = UDim2.new(0.075, 0, 0.5, 0)
+JumpInput.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 JumpInput.TextColor3 = Color3.fromRGB(255, 255, 255)
-JumpInput.Text = "100" -- Giá trị gợi ý sẵn
+JumpInput.Text = "100"
 Instance.new("UICorner", JumpInput)
 
--- Nút Bật/Tắt
+-- Nút Apply
 ApplyBtn.Parent = MainFrame
 ApplyBtn.Text = "APPLY"
-ApplyBtn.Size = UDim2.new(0.85, 0, 0, 35)
-ApplyBtn.Position = UDim2.new(0.075, 0, 0.72, 0)
+ApplyBtn.Size = UDim2.new(0.85, 0, 0, 28)
+ApplyBtn.Position = UDim2.new(0.075, 0, 0.75, 0)
 ApplyBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 ApplyBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
 ApplyBtn.Font = Enum.Font.GothamBold
 Instance.new("UICorner", ApplyBtn)
 
 ----------------------------------------------------------------
--- LOGIC XỬ LÝ (QUAN TRỌNG)
+-- LOGIC
 ----------------------------------------------------------------
 local active = false
 
--- Hàm cập nhật chỉ số an toàn
 local function setStats(char)
     if not char then return end
-    local hum = char:WaitForChild("Humanoid", 5)
+    local hum = char:WaitForChild("Humanoid", 3)
     if hum and active then
-        -- Dùng pcall để tránh lỗi script nếu Humanoid bị khóa
         pcall(function()
             hum.WalkSpeed = tonumber(SpeedInput.Text) or 16
             hum.JumpPower = tonumber(JumpInput.Text) or 50
@@ -114,35 +131,33 @@ local function setStats(char)
     end
 end
 
--- 1. Bấm thanh ngang
+-- Toggle Menu
 HomeBar.MouseButton1Click:Connect(function()
     MainFrame.Visible = not MainFrame.Visible
 end)
 
--- 2. Tự động áp dụng lại khi hồi sinh
-Player.CharacterAdded:Connect(function(newChar)
-    task.wait(1) -- Đợi 1 giây cho game load xong nhân vật
-    if active then
-        setStats(newChar)
+-- Auto Update
+task.spawn(function()
+    while true do
+        task.wait(1)
+        if active and Player.Character then
+            setStats(Player.Character)
+        end
     end
 end)
 
--- 3. Nút Apply
+-- Nút Apply Logic
 ApplyBtn.MouseButton1Click:Connect(function()
     active = not active
     local char = Player.Character
     
     if active then
         ApplyBtn.Text = "RESET"
-        ApplyBtn.BackgroundColor3 = Color3.fromRGB(255, 80, 80) -- Đỏ nhạt
-        ApplyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        ApplyBtn.BackgroundColor3 = Color3.fromRGB(255, 80, 80)
         setStats(char)
     else
         ApplyBtn.Text = "APPLY"
         ApplyBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-        ApplyBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
-        
-        -- Reset về mặc định
         if char and char:FindFirstChild("Humanoid") then
             char.Humanoid.WalkSpeed = 16
             char.Humanoid.JumpPower = 50
@@ -150,5 +165,8 @@ ApplyBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- Thông báo đã load xong (Bấm F9 để xem nếu script chạy)
-print("Script Menu Speed đã tải thành công!")
+game.StarterGui:SetCore("SendNotification", {
+    Title = "Bear Hub",
+    Text = "Đã chỉnh ngang 80!",
+    Duration = 5
+})
