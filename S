@@ -32,11 +32,11 @@ ScreenGui.DisplayOrder = 9999
 local HomeBarWrapper = Instance.new("TextButton")
 HomeBarWrapper.Name = "HomeBarTrigger"
 HomeBarWrapper.Parent = ScreenGui
-HomeBarWrapper.Size = UDim2.new(0, 120, 0, 40) -- Chiều cao 40
-HomeBarWrapper.AnchorPoint = Vector2.new(0.5, 0) -- Neo ở giữa cạnh trên
+HomeBarWrapper.Size = UDim2.new(0, 120, 0, 40) 
+HomeBarWrapper.AnchorPoint = Vector2.new(0.5, 0) 
 
--- [VỊ TRÍ NÚT]: 0.65 (Lệch phải), 0, 5 (Cách mép trên 5px)
-HomeBarWrapper.Position = UDim2.new(0.65, 0, 0, 5) 
+-- [ĐÃ CHỈNH SỬA] Thay đổi tham số cuối từ 5 thành -15 để sát mép trên
+HomeBarWrapper.Position = UDim2.new(0.65, 0, 0, -15) 
 
 HomeBarWrapper.BackgroundTransparency = 1
 HomeBarWrapper.Text = ""
@@ -60,62 +60,15 @@ MainFrame.Parent = ScreenGui
 MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 MainFrame.ClipsDescendants = true
 
--- [QUAN TRỌNG] CĂN CHỈNH VỊ TRÍ
--- Neo ở giữa cạnh trên (để nó thả xuống dưới)
+-- Neo ở giữa cạnh trên
 MainFrame.AnchorPoint = Vector2.new(0.5, 0) 
 
--- X = 0.65 (Giống hệt nút Toggle để thẳng hàng dọc)
--- Y = 50 (Cách mép trên 50px = 5px lề + 40px chiều cao nút + 5px khoảng cách)
-MainFrame.Position = UDim2.new(0.65, 0, 0, 50) 
+-- [ĐÃ CHỈNH SỬA] Thay đổi tham số cuối từ 50 thành 30 để menu đi theo nút
+MainFrame.Position = UDim2.new(0.65, 0, 0, 30) 
 
 MainFrame.Size = UDim2.new(0, 150, 0, 160) 
 MainFrame.Visible = true 
 MainFrame.BorderSizePixel = 0
-
--- Bo góc
-Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 10)
-
--- Tiêu đề
-local Title = Instance.new("TextLabel", MainFrame)
-Title.Size = UDim2.new(1, 0, 0, 30)
-Title.BackgroundTransparency = 1
-Title.Text = "Bear Hub"
-Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.Font = Enum.Font.GothamBold
-Title.TextSize = 14
-
--- Input Tốc độ
-local SpeedInput = Instance.new("TextBox")
-SpeedInput.Parent = MainFrame
-SpeedInput.PlaceholderText = "Speed..."
-SpeedInput.Size = UDim2.new(0.85, 0, 0, 30)
-SpeedInput.Position = UDim2.new(0.075, 0, 0.22, 0)
-SpeedInput.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-SpeedInput.TextColor3 = Color3.fromRGB(255, 255, 255)
-SpeedInput.Text = "100"
-Instance.new("UICorner", SpeedInput).CornerRadius = UDim.new(0, 6)
-
--- Input Nhảy
-local JumpInput = Instance.new("TextBox")
-JumpInput.Parent = MainFrame
-JumpInput.PlaceholderText = "Jump..."
-JumpInput.Size = UDim2.new(0.85, 0, 0, 30)
-JumpInput.Position = UDim2.new(0.075, 0, 0.47, 0)
-JumpInput.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-JumpInput.TextColor3 = Color3.fromRGB(255, 255, 255)
-JumpInput.Text = "100"
-Instance.new("UICorner", JumpInput).CornerRadius = UDim.new(0, 6)
-
--- Nút Apply
-local ApplyBtn = Instance.new("TextButton")
-ApplyBtn.Parent = MainFrame
-ApplyBtn.Text = "APPLY"
-ApplyBtn.Size = UDim2.new(0.85, 0, 0, 30)
-ApplyBtn.Position = UDim2.new(0.075, 0, 0.75, 0)
-ApplyBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-ApplyBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
-ApplyBtn.Font = Enum.Font.GothamBold
-Instance.new("UICorner", ApplyBtn).CornerRadius = UDim.new(0, 6)
 
 ----------------------------------------------------------------
 -- C. LOGIC
