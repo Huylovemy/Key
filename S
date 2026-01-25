@@ -1,15 +1,16 @@
 --[[ 
-    BEAR HUB - FIXED LOGIC + ORIGINAL STYLE
-    - Style: Giống hệt bản gốc (Lệch phải, màu trắng).
-    - Logic: Đã fix lỗi không hiện chức năng.
+    BEAR HUB - FIXED FOR BLOX FRUITS
+    - Style: Giữ nguyên gốc.
+    - Logic: Đã nâng cấp lên RenderStepped để bypass cơ chế reset của Blox Fruits.
 ]]
 
 -- 1. DỊCH VỤ
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService") -- Thêm RunService để chạy siêu nhanh
 local Player = Players.LocalPlayer or Players.PlayerAdded:Wait()
 
--- Đợi PlayerGui an toàn (không timeout)
+-- Đợi PlayerGui an toàn
 local PlayerGui = Player:WaitForChild("PlayerGui")
 
 -- 2. DỌN DẸP GUI CŨ
@@ -17,7 +18,7 @@ for _, v in pairs(PlayerGui:GetChildren()) do
     if v.Name == "BearHub_Dropdown" then v:Destroy() end
 end
 
--- 3. TẠO GUI
+-- 3. TẠO GUI (GIỮ NGUYÊN STYLE CŨ)
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "BearHub_Dropdown"
 ScreenGui.Parent = PlayerGui
@@ -25,57 +26,41 @@ ScreenGui.ResetOnSpawn = false
 ScreenGui.IgnoreGuiInset = true 
 ScreenGui.DisplayOrder = 9999 
 
-----------------------------------------------------------------
--- A. NÚT TOGGLE (STYLE CŨ)
-----------------------------------------------------------------
+-- NÚT TOGGLE
 local HomeBarWrapper = Instance.new("TextButton")
 HomeBarWrapper.Name = "HomeBarTrigger"
 HomeBarWrapper.Parent = ScreenGui
-HomeBarWrapper.Size = UDim2.new(0, 120, 0, 40) -- Kích thước gốc
+HomeBarWrapper.Size = UDim2.new(0, 120, 0, 40)
 HomeBarWrapper.AnchorPoint = Vector2.new(0.5, 0) 
-
--- [STYLE CŨ] Lệch phải 0.65, sát mép trên -15
-HomeBarWrapper.Position = UDim2.new(0.65, 0, 0, -15) 
-
+HomeBarWrapper.Position = UDim2.new(0.65, 0, 0, -15) -- Vị trí lệch phải
 HomeBarWrapper.BackgroundTransparency = 1
 HomeBarWrapper.Text = ""
 
--- Thanh hiển thị (Visual gốc: Trắng, mờ)
 local HomeBarVisual = Instance.new("Frame")
 HomeBarVisual.Parent = HomeBarWrapper
-HomeBarVisual.Size = UDim2.new(0, 80, 0, 6) -- Size gốc
+HomeBarVisual.Size = UDim2.new(0, 80, 0, 6)
 HomeBarVisual.AnchorPoint = Vector2.new(0.5, 0.5)
 HomeBarVisual.Position = UDim2.new(0.5, 0, 0.5, 0) 
-HomeBarVisual.BackgroundColor3 = Color3.fromRGB(255, 255, 255) -- Màu trắng
-HomeBarVisual.BackgroundTransparency = 0.4 -- Độ mờ gốc
+HomeBarVisual.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+HomeBarVisual.BackgroundTransparency = 0.4
 Instance.new("UICorner", HomeBarVisual).CornerRadius = UDim.new(1, 0)
 
-----------------------------------------------------------------
--- B. MENU CHÍNH (VỊ TRÍ CŨ)
-----------------------------------------------------------------
+-- MENU CHÍNH
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
 MainFrame.Parent = ScreenGui 
 MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 MainFrame.ClipsDescendants = true
 MainFrame.AnchorPoint = Vector2.new(0.5, 0) 
-
--- [STYLE CŨ] Menu nằm ngay dưới nút ở vị trí 0.65
 MainFrame.Position = UDim2.new(0.65, 0, 0, 30) 
-
 MainFrame.Size = UDim2.new(0, 150, 0, 165) 
-MainFrame.Visible = false -- Mặc định ẩn
+MainFrame.Visible = false
 MainFrame.BorderSizePixel = 0
-
--- Bo góc (Thêm vào cho đẹp, nếu không thích có thể xóa)
 local MainCorner = Instance.new("UICorner")
 MainCorner.CornerRadius = UDim.new(0, 8)
 MainCorner.Parent = MainFrame
 
-----------------------------------------------------------------
--- C. CÁC NÚT CHỨC NĂNG (BẮT BUỘC PHẢI CÓ ĐỂ CHẠY LOGIC)
-----------------------------------------------------------------
--- Layout tự động sắp xếp
+-- CÁC NÚT CHỨC NĂNG
 local UIList = Instance.new("UIListLayout")
 UIList.Parent = MainFrame
 UIList.SortOrder = Enum.SortOrder.LayoutOrder
@@ -83,7 +68,6 @@ UIList.Padding = UDim.new(0, 8)
 UIList.HorizontalAlignment = Enum.HorizontalAlignment.Center
 UIList.VerticalAlignment = Enum.VerticalAlignment.Center
 
--- Hàm tạo Input nhanh
 local function createInput(name, placeholder, order)
     local InputBox = Instance.new("TextBox")
     InputBox.Name = name
@@ -96,19 +80,15 @@ local function createInput(name, placeholder, order)
     InputBox.Text = ""
     InputBox.Font = Enum.Font.SourceSansBold
     InputBox.TextSize = 14
-    
     local corner = Instance.new("UICorner")
     corner.CornerRadius = UDim.new(0, 6)
     corner.Parent = InputBox
-    
     return InputBox
 end
 
--- Tạo lại các biến bị thiếu trong script gốc
-local SpeedInput = createInput("SpeedInput", "Walk Speed", 1)
-local JumpInput = createInput("JumpInput", "Jump Power", 2)
+local SpeedInput = createInput("SpeedInput", "Speed (Default: 16)", 1)
+local JumpInput = createInput("JumpInput", "Jump (Default: 50)", 2)
 
--- Tạo nút Apply
 local ApplyBtn = Instance.new("TextButton")
 ApplyBtn.Name = "ApplyBtn"
 ApplyBtn.Parent = MainFrame
@@ -120,65 +100,86 @@ ApplyBtn.Text = "APPLY"
 ApplyBtn.Font = Enum.Font.SourceSansBold
 ApplyBtn.TextSize = 16
 Instance.new("UICorner", ApplyBtn).CornerRadius = UDim.new(0, 6)
-ApplyBtn.Parent = MainFrame
 
 ----------------------------------------------------------------
--- D. LOGIC (GIỮ NGUYÊN)
+-- D. LOGIC MỚI (FIX CHO BLOX FRUITS)
 ----------------------------------------------------------------
 
--- Toggle Menu Logic
+-- Toggle Menu
 local isMenuOpen = false
 HomeBarWrapper.MouseButton1Click:Connect(function()
     isMenuOpen = not isMenuOpen
     MainFrame.Visible = isMenuOpen
-    
-    -- Hiệu ứng nút (Gốc)
     TweenService:Create(HomeBarVisual, TweenInfo.new(0.15), {BackgroundTransparency = 0.1}):Play()
     task.wait(0.15)
     TweenService:Create(HomeBarVisual, TweenInfo.new(0.15), {BackgroundTransparency = 0.4}):Play()
 end)
 
--- Speed/Jump Logic
 local active = false
-local function setStats(char)
+local connection = nil -- Biến lưu kết nối vòng lặp
+
+-- Hàm set chỉ số mạnh mẽ hơn
+local function setStats()
+    local char = Player.Character
     if not char then return end
     local hum = char:FindFirstChild("Humanoid")
-    if hum and active then
-        pcall(function()
-            if tonumber(SpeedInput.Text) then hum.WalkSpeed = tonumber(SpeedInput.Text) end
-            if tonumber(JumpInput.Text) then 
-                hum.UseJumpPower = true
-                hum.JumpPower = tonumber(JumpInput.Text) 
-            end
-        end)
-    end
-end
+    if not hum then return end
 
-task.spawn(function()
-    while true do
-        task.wait()
-        if active and Player.Character then setStats(Player.Character) end
-    end
-end)
+    pcall(function()
+        -- Xử lý Speed
+        local sVal = tonumber(SpeedInput.Text)
+        if sVal then 
+            hum.WalkSpeed = sVal 
+        end
+
+        -- Xử lý Jump (Blox Fruit cần force cả 2 loại nhảy)
+        local jVal = tonumber(JumpInput.Text)
+        if jVal then 
+            hum.UseJumpPower = true 
+            hum.JumpPower = jVal
+            -- Force thêm JumpHeight phòng trường hợp game đổi cơ chế vật lý
+            hum.JumpHeight = jVal / 5 -- (Ước lượng chuyển đổi)
+        end
+    end)
+end
 
 ApplyBtn.MouseButton1Click:Connect(function()
     active = not active
     local char = Player.Character
+    
     if active then
+        -- BẬT: Dùng RenderStepped để spam chỉ số mỗi khung hình
         ApplyBtn.Text = "STOP"
         ApplyBtn.BackgroundColor3 = Color3.fromRGB(255, 80, 80)
+        
+        -- Ngắt kết nối cũ nếu có để tránh lag
+        if connection then connection:Disconnect() end
+        
+        -- Tạo vòng lặp siêu nhanh
+        connection = RunService.RenderStepped:Connect(function()
+            setStats()
+        end)
     else
+        -- TẮT: Ngắt vòng lặp và trả về mặc định
         ApplyBtn.Text = "APPLY"
         ApplyBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        
+        if connection then 
+            connection:Disconnect() 
+            connection = nil
+        end
+        
         if char and char:FindFirstChild("Humanoid") then
             char.Humanoid.WalkSpeed = 16
             char.Humanoid.JumpPower = 50
+            char.Humanoid.JumpHeight = 7.2
         end
     end
 end)
 
+-- Thông báo
 game.StarterGui:SetCore("SendNotification", {
     Title = "Bear Hub",
-    Text = "Menu Style Restored!",
+    Text = "Blox Fruits Logic Fixed!",
     Duration = 3
 })
